@@ -28,12 +28,19 @@ base {
 
 repositories {
 	mavenCentral()
+	maven { url = uri("https://maven.shedaniel.me/") }
+	maven { url = uri("https://maven.terraformersmc.com/releases/") }
 }
 
 dependencies {
 	minecraft(libs.minecraft)
 	mappings(libs.yarn)
 	modImplementation(libs.bundles.fabric)
+
+	modImplementation(libs.cloth.config)
+
+	implementation(libs.bundles.night.config)
+	include(libs.bundles.night.config)
 }
 
 java {

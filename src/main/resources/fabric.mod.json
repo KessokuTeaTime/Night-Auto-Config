@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "nightautoconfig",
   "version": "${version}",
 
   "name": "${display.name}",
@@ -10,27 +10,31 @@
     "KrLite"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/modid",
-    "sources": "https://github.com/KessokuTeaTime/Example-Mod",
-    "issues": "https://github.com/KessokuTeaTime/Example-Mod/issues"
+    "homepage": "https://modrinth.com/mod/night-auto-config",
+    "sources": "https://github.com/KessokuTeaTime/Night-Auto-Config",
+    "issues": "https://github.com/KessokuTeaTime/Night-Auto-Config/issues"
   },
 
   "license": "GPL-3.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/nightautoconfig/icon.png",
 
   "environment": "*",
   "entrypoints": {
-    "main": [
-	    "band.kessoku.modid.ExampleMod"
+    "client": [
+      "band.kessokuteatime.nightautoconfig.NightAutoConfig"
     ]
   },
   "mixins": [
     "modid.mixins.json"
   ],
-
+  "custom": {
+    "modmenu": {
+      "badges": ["library"]
+    }
+  },
   "depends": {
     "fabricloader": "*",
-    "fabric-api": "*",
+    "cloth-config": ">=6",
     "minecraft": "1.20.x"
   },
   "suggests": {
