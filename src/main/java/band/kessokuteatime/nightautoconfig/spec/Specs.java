@@ -5,13 +5,13 @@ import band.kessokuteatime.nightautoconfig.annotation.*;
 import band.kessokuteatime.nightautoconfig.serializer.ConfigType;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigSpec;
+import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.AdvancedPath;
 import com.electronwill.nightconfig.core.conversion.Path;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +35,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         appendNestedSpecs(spec);
         appendBasicSpecs(spec);
         appendInRangeSpecs(spec);
+        appendInListSpecs(spec);
+        appendEnumGetMethodSpecs(spec);
 
         ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
             String pathString = String.join(",", path);
@@ -68,7 +70,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                             config.set(path, fallbackConfig);
 
                             NightAutoConfig.LOGGER.warn(
-                                    "{} Missing nested config for {}! Falling back to the default one.",
+                                    "{} Missing nested config for {}! Falling back to the default one",
                                     loggerPrefix(session), String.join(".", path)
                             );
                         }
@@ -187,8 +189,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         final boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
                         if (field.isAnnotationPresent(SpecElementValidator.class)) {
-                            SpecElementValidator elementValidator = field.getAnnotation(SpecElementValidator.class);
-                            Predicate<Object> validator = elementValidator.value().getDeclaredConstructor().newInstance();
+                            SpecElementValidator elementValidatorAnnotation = field.getAnnotation(SpecElementValidator.class);
+                            Predicate<Object> validator = elementValidatorAnnotation.definition().getDeclaredConstructor().newInstance();
 
                             if (isFloat) {
                                 // Store float as double
@@ -233,9 +235,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(typeChecker(SpecInRangeByte.associatedTypes))
                 .filter(field -> field.isAnnotationPresent(SpecInRangeByte.class))
                 .forEach(field -> {
-                    SpecInRangeByte inRange = field.getAnnotation(SpecInRangeByte.class);
+                    SpecInRangeByte inRangeAnnotation = field.getAnnotation(SpecInRangeByte.class);
                     try {
-                        appendInRangeSpec(spec, field, inRange.min(), inRange.max());
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -246,9 +248,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(typeChecker(SpecInRangeShort.associatedTypes))
                 .filter(field -> field.isAnnotationPresent(SpecInRangeShort.class))
                 .forEach(field -> {
-                    SpecInRangeShort inRange = field.getAnnotation(SpecInRangeShort.class);
+                    SpecInRangeShort inRangeAnnotation = field.getAnnotation(SpecInRangeShort.class);
                     try {
-                        appendInRangeSpec(spec, field, inRange.min(), inRange.max());
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -259,9 +261,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(typeChecker(SpecInRangeInt.associatedTypes))
                 .filter(field -> field.isAnnotationPresent(SpecInRangeInt.class))
                 .forEach(field -> {
-                    SpecInRangeInt inRange = field.getAnnotation(SpecInRangeInt.class);
+                    SpecInRangeInt inRangeAnnotation = field.getAnnotation(SpecInRangeInt.class);
                     try {
-                        appendInRangeSpec(spec, field, inRange.min(), inRange.max());
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -272,9 +274,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(typeChecker(SpecInRangeLong.associatedTypes))
                 .filter(field -> field.isAnnotationPresent(SpecInRangeLong.class))
                 .forEach(field -> {
-                    SpecInRangeLong inRange = field.getAnnotation(SpecInRangeLong.class);
+                    SpecInRangeLong inRangeAnnotation = field.getAnnotation(SpecInRangeLong.class);
                     try {
-                        appendInRangeSpec(spec, field, inRange.min(), inRange.max());
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -285,9 +287,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(typeChecker(List.of(Float.class, float.class)))
                 .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
                 .forEach(field -> {
-                    SpecInRangeDouble inRange = field.getAnnotation(SpecInRangeDouble.class);
+                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
                     try {
-                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), inRange.min(), inRange.max());
+                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -298,9 +300,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(typeChecker(List.of(Double.class, double.class)))
                 .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
                 .forEach(field -> {
-                    SpecInRangeDouble inRange = field.getAnnotation(SpecInRangeDouble.class);
+                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
                     try {
-                        appendInRangeSpec(spec, field, (double) field.get(t), inRange.min(), inRange.max());
+                        appendInRangeSpec(spec, field, (double) field.get(t), inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -312,29 +314,48 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .filter(field -> field.isAnnotationPresent(SpecInList.class))
                 .filter(field -> !field.getType().isEnum())
                 .forEach(field -> {
-                    SpecInList inList = field.getAnnotation(SpecInList.class);
-                });
-    }
-
-    private <T extends Enum<T>> void appendEnumGetMethodSpecs(ConfigSpec spec) {
-        Arrays.stream(nonNestedFields())
-                .filter(field -> field.getType().isEnum())
-                .filter(field -> field.isAnnotationPresent(SpecEnumGetMethod.class))
-                .forEach(field -> {
+                    SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
                     try {
                         field.setAccessible(true);
                         Object value = field.get(t);
 
-                        SpecEnumGetMethod enumGetMethod = field.getAnnotation(SpecEnumGetMethod.class);
+                        Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
+
+                        spec.defineInList(getPath(field), value, acceptableValues);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    private <E extends Enum<E>> void appendEnumGetMethodSpecs(ConfigSpec spec) {
+        Arrays.stream(nonNestedFields())
+                .filter(field -> field.getType().isEnum())
+                .filter(field -> field.isAnnotationPresent(SpecEnumGetMethod.class))
+                .forEach(field -> {
+                    SpecEnumGetMethod enumGetMethodAnnotation = field.getAnnotation(SpecEnumGetMethod.class);
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        EnumGetMethod enumGetMethod = enumGetMethodAnnotation.value();
                         if (field.isAnnotationPresent(SpecInList.class)) {
                             // Restricted by acceptable values
-                            SpecInList inList = field.getAnnotation(SpecInList.class);
-                            Collection<T> acceptableValues = (Collection<T>) inList.value().getDeclaredConstructor().newInstance().acceptableValues();
+                            SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
+                            Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
 
-                            spec.defineRestrictedEnum(getPath(field), (T) value, acceptableValues, enumGetMethod.value());
+                            if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
+                                Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
+                                spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
+                            } else {
+                                NightAutoConfig.LOGGER.error(
+                                        "Invalid @SpecInList annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
+                                        getPath(field)
+                                );
+                            }
                         } else {
                             // Unrestricted
-                            spec.defineEnum(getPath(field), (T) value, enumGetMethod.value());
+                            spec.defineEnum(getPath(field), (E) value, enumGetMethod);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);

@@ -1,16 +1,43 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
+import band.kessokuteatime.nightautoconfig.annotation.SpecEnumGetMethod;
+import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
+import band.kessokuteatime.nightautoconfig.spec.ValuesInList;
+import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
 import com.electronwill.nightconfig.core.conversion.Path;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
+import java.util.Collection;
+import java.util.List;
+
 @Config(name = "example")
 public class ExampleConfig implements ConfigData {
+    public enum ExampleEnum {
+        FIRST,
+        SECOND,
+        THIRD
+    }
+
+    public static class ExampleStringValuesInList implements ValuesInList<String> {
+        @Override
+        public Collection<String> acceptableValues() {
+            return List.of("case 1", "case 2", "case 3");
+        }
+    }
+
+    public static class ExampleEnumValuesInList implements ValuesInList<ExampleEnum> {
+        @Override
+        public Collection<ExampleEnum> acceptableValues() {
+            return List.of(ExampleEnum.FIRST, ExampleEnum.SECOND);
+        }
+    }
+
     public int exampleInt = 10;
 
     public double exampleDouble = 3.14159;
@@ -38,5 +65,14 @@ public class ExampleConfig implements ConfigData {
         public int innerInt = 42;
 
         public String innerString = "S.T.A.Y.";
+
+        @SpecInList(definition = ExampleStringValuesInList.class)
+        public String restrictedString = "case 1";
+
+        public ExampleEnum innerEnum = ExampleEnum.SECOND;
+
+        @SpecEnumGetMethod(EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE)
+        @SpecInList(definition = ExampleEnumValuesInList.class)
+        public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
     }
 }

@@ -12,5 +12,5 @@ import java.util.function.Predicate;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface SpecElementValidator {
-    Class<Predicate<Object>> value();
+    Class<? extends Predicate<Object>> definition();
 }
