@@ -3,6 +3,7 @@ package band.kessokuteatime.nightautoconfig.example.config;
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
+import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
 import band.kessokuteatime.nightautoconfig.spec.ValuesInList;
 import com.electronwill.nightconfig.core.EnumGetMethod;
@@ -69,10 +70,11 @@ public class ExampleConfig implements ConfigData {
         @SpecInList(definition = ExampleStringValuesInList.class)
         public String restrictedString = "case 1";
 
+        @SpecOfClass(ExampleEnum.class)
         public ExampleEnum innerEnum = ExampleEnum.SECOND;
 
         @SpecEnum(method = EnumGetMethod.ORDINAL_OR_NAME)
-        //@SpecInList(definition = ExampleEnumValuesInList.class)
+        @SpecInList(definition = ExampleEnumValuesInList.class)
         public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
     }
 }

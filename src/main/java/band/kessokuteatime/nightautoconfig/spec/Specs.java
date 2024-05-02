@@ -104,6 +104,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         appendBasicSpecs(spec);
         appendInRangeSpecs(spec);
         appendInListSpecs(spec);
+        appendOfClassSpecs(spec);
+        appendEnumSpecs(spec);
 
         ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
             String pathString = String.join(",", path);
@@ -211,6 +213,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
     private <E extends Enum<E>> void appendBasicSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
+                .filter(field -> !field.getType().isEnum()) // Enums are handled separately
                 .forEach(field -> {
                     try {
                         if (isNested(field)) {
@@ -220,32 +223,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         field.setAccessible(true);
                         Object value = field.get(t);
 
-                        final boolean isEnum = field.getType().isEnum();
                         final boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
-                        if (isEnum) {
-                            SpecEnum specEnum = field.getAnnotation(SpecEnum.class);
-                            EnumGetMethod enumGetMethod = (specEnum != null) ? specEnum.method() : EnumGetMethod.NAME_IGNORECASE;
-
-                            if (field.isAnnotationPresent(SpecInList.class)) {
-                                // Restricted
-                                SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
-                                Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
-
-                                if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
-                                    Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
-                                    spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
-                                } else {
-                                    LOGGER.error(
-                                            "Invalid @SpecInList annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
-                                            getPath(field)
-                                    );
-                                }
-                            } else {
-                                // Unrestricted
-                                spec.defineEnum(getPath(field), (E) value, enumGetMethod);
-                            }
-                        } else if (field.isAnnotationPresent(SpecElementValidator.class)) {
+                        if (field.isAnnotationPresent(SpecElementValidator.class)) {
                             SpecElementValidator elementValidatorAnnotation = field.getAnnotation(SpecElementValidator.class);
                             Predicate<Object> validator = elementValidatorAnnotation.definition().getDeclaredConstructor().newInstance();
 
@@ -369,7 +349,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
     private void appendInListSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .filter(field -> field.isAnnotationPresent(SpecInList.class))
-                .filter(field -> !field.getType().isEnum())
+                .filter(field -> !field.getType().isEnum()) // Enums are handled separately
                 .forEach(field -> {
                     SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
                     try {
@@ -379,6 +359,79 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
 
                         spec.defineInList(getPath(field), value, acceptableValues);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    private <E> void appendOfClassSpecs(ConfigSpec spec) {
+        Arrays.stream(nonNestedFields())
+                .filter(field -> !field.getType().isEnum()) // Enums are handled separately
+                .filter(field -> field.isAnnotationPresent(SpecOfClass.class))
+                .forEach(field -> {
+                    SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        Class<?> ofClass = ofClassAnnotation.value();
+
+                        if (ofClass.isAssignableFrom(field.getType())) {
+                            spec.defineOfClass(getPath(field), (E) value, (Class<? super E>) ofClass);
+                        } else {
+                            LOGGER.error(
+                                    "Invalid @{} annotation for {}: the field type is not a subclass of the specified class. Ignoring!",
+                                    SpecOfClass.class.getSimpleName(), getPath(field)
+                            );
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    private <E extends Enum<E>> void appendEnumSpecs(ConfigSpec spec) {
+        Arrays.stream(nonNestedFields())
+                .filter(field -> field.getType().isEnum())
+                .forEach(field -> {
+                    SpecEnum specEnum = field.getAnnotation(SpecEnum.class);
+                    EnumGetMethod enumGetMethod = (specEnum != null) ? specEnum.method() : EnumGetMethod.NAME_IGNORECASE;
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        if (field.isAnnotationPresent(SpecInList.class)) {
+                            // Restricted
+                            SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
+                            Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
+
+                            if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
+                                Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
+                                spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
+                            } else {
+                                LOGGER.error(
+                                        "Invalid @{} annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
+                                        SpecInList.class.getSimpleName(), getPath(field)
+                                );
+                            }
+                        } else if (field.isAnnotationPresent(SpecOfClass.class)) {
+                            // Restricted by class
+                            // Currently cannot be handled by `defineOfClass` due to unknown issues
+                            SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
+                            Class<?> ofClass = ofClassAnnotation.value();
+                            if (ofClass.isAssignableFrom(field.getType())) {
+                                spec.defineRestrictedEnum(getPath(field), (E) value, (List<E>) List.of(ofClass.getEnumConstants()), enumGetMethod);
+                            } else {
+                                LOGGER.error(
+                                        "Invalid @{} annotation for {}: the field type is not a subclass of the specified class. Ignoring!",
+                                        SpecOfClass.class.getSimpleName(), getPath(field)
+                                );
+                            }
+                        }else {
+                            // Unrestricted
+                            spec.defineEnum(getPath(field), (E) value, enumGetMethod);
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
