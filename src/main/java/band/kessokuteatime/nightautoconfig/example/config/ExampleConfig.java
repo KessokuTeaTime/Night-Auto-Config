@@ -1,8 +1,10 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
+import band.kessokuteatime.nightautoconfig.annotation.Nested;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
 import com.electronwill.nightconfig.core.conversion.Conversion;
+import com.electronwill.nightconfig.core.conversion.Path;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -21,19 +23,17 @@ public class ExampleConfig implements ConfigData {
 
     public String exampleString = "Hello, World!";
 
-    //@Path("stringWithCustomKey")
+    @Path("stringWithCustomKey")
     public String exampleString2 = "Another String.";
 
-    @ConfigEntry.Category("category")
+    //@ConfigEntry.Category("category")
     public String categorizedString = "Categorized!";
 
-    /*
     @ConfigEntry.Gui.TransitiveObject
-    @ConfigEntry.Category("inner")
+    //@ConfigEntry.Category("inner")
     public InnerConfig innerConfig = new InnerConfig();
 
-     */
-
+    @Nested
     public static class InnerConfig {
         public int innerInt = 42;
 

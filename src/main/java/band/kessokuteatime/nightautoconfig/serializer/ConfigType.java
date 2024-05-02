@@ -1,5 +1,10 @@
 package band.kessokuteatime.nightautoconfig.serializer;
 
+import com.electronwill.nightconfig.core.conversion.ObjectConverter;
+import com.electronwill.nightconfig.hocon.HoconFormat;
+import com.electronwill.nightconfig.json.JsonFormat;
+import com.electronwill.nightconfig.toml.TomlFormat;
+import com.electronwill.nightconfig.yaml.YamlFormat;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.util.Utils;
@@ -28,5 +33,16 @@ public enum ConfigType {
             case JSON -> new GeneralNightConfigSerializer<>(definition, configClass, this);
             case YAML, TOML, HOCON -> new CommentedNightConfigSerializer<>(definition, configClass, this);
         };
+    }
+
+    public com.electronwill.nightconfig.core.Config wrap(Object object) {
+        com.electronwill.nightconfig.core.Config config = switch (this) {
+            case JSON -> JsonFormat.newConfig();
+            case YAML -> YamlFormat.newConfig();
+            case TOML -> TomlFormat.newConfig();
+            case HOCON -> HoconFormat.newConfig();
+        };
+        new ObjectConverter().toObject(config, object);
+        return config;
     }
 }

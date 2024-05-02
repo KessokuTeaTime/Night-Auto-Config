@@ -1,29 +1,65 @@
 package band.kessokuteatime.nightautoconfig.spec;
 
+import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.annotation.*;
+import band.kessokuteatime.nightautoconfig.serializer.ConfigType;
+import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.conversion.AdvancedPath;
 import com.electronwill.nightconfig.core.conversion.Path;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
-public record SpecBuilder<T>(T t) {
-    public ConfigSpec build() {
+public record Specs<T>(T t, ConfigType type) {
+    public enum Session {
+        SAVING("Saving"),
+        NESTED_SAVING("Saving/Nested"),
+        LOADING("Loading"),
+        NESTED_LOADING("Loading/Nested");
+
+        private final String name;
+
+        Session(String name) {
+            this.name = name;
+        }
+
+        public String semanticName() {
+            return name;
+        }
+    }
+
+    public void correct(Config config, Session session) {
         ConfigSpec spec = new ConfigSpec();
 
         appendBasicSpecs(spec);
         appendInRangeSpecs(spec);
 
-        return spec;
+        ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
+            String pathString = String.join(",", path);
+            NightAutoConfig.LOGGER.info(
+                    "({}}) Corrected {}: was {}, is now {}",
+                    session.semanticName(), pathString, incorrectValue, correctedValue
+            );
+        };
+
+        int count = correct(config, listener);
+        if (count > 0) {
+            NightAutoConfig.LOGGER.info(
+                    "({}) Corrected {} {}",
+                    session.semanticName(), count, (count == 1)? "item" : "items"
+            );
+        }
+    }
+
+    private int correct(Config config, ConfigSpec.CorrectionListener listener) {
+
     }
 
     /**
@@ -71,6 +107,13 @@ public record SpecBuilder<T>(T t) {
                     try {
                         field.setAccessible(true);
                         Object value = field.get(t);
+
+                        boolean isNested = field.getType().isAnnotationPresent(Nested.class);
+
+                        if (isNested) {
+                            System.out.println(new Specs<>(value, type).build());
+                            return;
+                        }
 
                         boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
