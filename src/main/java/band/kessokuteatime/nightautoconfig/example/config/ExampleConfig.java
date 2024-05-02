@@ -5,6 +5,7 @@ import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
+import band.kessokuteatime.nightautoconfig.converter.MapToConfigConverter;
 import band.kessokuteatime.nightautoconfig.spec.ValuesInList;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
@@ -14,8 +15,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Config(name = "example")
 public class ExampleConfig implements ConfigData {
@@ -60,6 +60,22 @@ public class ExampleConfig implements ConfigData {
     @ConfigEntry.Gui.TransitiveObject
     //@ConfigEntry.Category("inner")
     public InnerConfig innerConfig = new InnerConfig();
+
+    public ArrayList<String> exampleStringArrayList = new ArrayList<>(List.of(
+            "one",
+            "two",
+            "three"
+    ));
+
+    /*
+    @Conversion(MapToConfigConverter.class)
+    public Map<String, Integer> exampleStringIntHashMap = new HashMap<>(Map.of(
+            "one", 1,
+            "two", 2,
+            "three", 3
+    ));
+
+     */
 
     @Nested
     public static class InnerConfig {
