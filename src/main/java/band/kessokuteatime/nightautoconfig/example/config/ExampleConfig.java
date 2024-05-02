@@ -1,7 +1,6 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
-import band.kessokuteatime.nightautoconfig.annotation.SpecEnumGetMethod;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
@@ -9,6 +8,7 @@ import band.kessokuteatime.nightautoconfig.spec.ValuesInList;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
 import com.electronwill.nightconfig.core.conversion.Path;
+import com.electronwill.nightconfig.core.conversion.SpecEnum;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -71,7 +71,7 @@ public class ExampleConfig implements ConfigData {
 
         public ExampleEnum innerEnum = ExampleEnum.SECOND;
 
-        @SpecEnumGetMethod(EnumGetMethod.ORDINAL_OR_NAME)
+        @SpecEnum(method = EnumGetMethod.ORDINAL_OR_NAME)
         //@SpecInList(definition = ExampleEnumValuesInList.class)
         public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
     }

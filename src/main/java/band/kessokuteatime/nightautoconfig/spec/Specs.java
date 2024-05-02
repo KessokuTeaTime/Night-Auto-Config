@@ -8,6 +8,7 @@ import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.AdvancedPath;
 import com.electronwill.nightconfig.core.conversion.Path;
+import com.electronwill.nightconfig.core.conversion.SpecEnum;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
@@ -103,7 +104,6 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         appendBasicSpecs(spec);
         appendInRangeSpecs(spec);
         appendInListSpecs(spec);
-        appendEnumGetMethodSpecs(spec);
 
         ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
             String pathString = String.join(",", path);
@@ -209,7 +209,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 });
     }
 
-    private void appendBasicSpecs(ConfigSpec spec) {
+    private <E extends Enum<E>> void appendBasicSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .forEach(field -> {
                     try {
@@ -220,9 +220,32 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         field.setAccessible(true);
                         Object value = field.get(t);
 
+                        final boolean isEnum = field.getType().isEnum();
                         final boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
-                        if (field.isAnnotationPresent(SpecElementValidator.class)) {
+                        if (isEnum) {
+                            SpecEnum specEnum = field.getAnnotation(SpecEnum.class);
+                            EnumGetMethod enumGetMethod = (specEnum != null) ? specEnum.method() : EnumGetMethod.NAME_IGNORECASE;
+
+                            if (field.isAnnotationPresent(SpecInList.class)) {
+                                // Restricted
+                                SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
+                                Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
+
+                                if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
+                                    Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
+                                    spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
+                                } else {
+                                    LOGGER.error(
+                                            "Invalid @SpecInList annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
+                                            getPath(field)
+                                    );
+                                }
+                            } else {
+                                // Unrestricted
+                                spec.defineEnum(getPath(field), (E) value, enumGetMethod);
+                            }
+                        } else if (field.isAnnotationPresent(SpecElementValidator.class)) {
                             SpecElementValidator elementValidatorAnnotation = field.getAnnotation(SpecElementValidator.class);
                             Predicate<Object> validator = elementValidatorAnnotation.definition().getDeclaredConstructor().newInstance();
 
@@ -356,41 +379,6 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
 
                         spec.defineInList(getPath(field), value, acceptableValues);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-    }
-
-    private <E extends Enum<E>> void appendEnumGetMethodSpecs(ConfigSpec spec) {
-        Arrays.stream(nonNestedFields())
-                .filter(field -> field.getType().isEnum())
-                .filter(field -> field.isAnnotationPresent(SpecEnumGetMethod.class))
-                .forEach(field -> {
-                    SpecEnumGetMethod enumGetMethodAnnotation = field.getAnnotation(SpecEnumGetMethod.class);
-                    try {
-                        field.setAccessible(true);
-                        Object value = field.get(t);
-
-                        EnumGetMethod enumGetMethod = enumGetMethodAnnotation.value();
-                        if (field.isAnnotationPresent(SpecInList.class)) {
-                            // Restricted by acceptable values
-                            SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
-                            Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
-
-                            if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
-                                Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
-                                spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
-                            } else {
-                                LOGGER.error(
-                                        "Invalid @SpecInList annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
-                                        getPath(field)
-                                );
-                            }
-                        } else {
-                            // Unrestricted
-                            spec.defineEnum(getPath(field), (E) value, enumGetMethod);
-                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
