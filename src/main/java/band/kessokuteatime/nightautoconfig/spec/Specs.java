@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public record Specs<T>(T t, ConfigType type, String fileName) {
     public record Session(Type type, int layer) {
@@ -37,7 +36,7 @@ public record Specs<T>(T t, ConfigType type, String fileName) {
         public String toString() {
             return layer == 0
                     ? type().name()
-                    : String.format("%s -> NESTED BY %d", type().name(), layer);
+                    : String.format("%s -> Nested by %d", type().name(), layer);
         }
     }
 
