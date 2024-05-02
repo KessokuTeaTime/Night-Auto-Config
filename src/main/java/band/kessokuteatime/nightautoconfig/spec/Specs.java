@@ -17,31 +17,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public record Specs<T>(T t, ConfigType type, String fileName) {
-    public enum Session {
-        SAVING("Saving"),
-        NESTED_SAVING("Saving/Nested"),
-        LOADING("Loading"),
-        NESTED_LOADING("Loading/Nested"),
-        UNKNOWN("Unknown");
-
-        private final String name;
-
-        Session(String name) {
-            this.name = name;
+    public record Session(Type type, int layer) {
+        public enum Type {
+            SAVING, LOADING;
         }
 
-        public String semanticName() {
-            return name;
-        }
+        public static final Session SAVING = new Session(Type.SAVING, 0);
+
+        public static final Session LOADING = new Session(Type.LOADING, 0);
 
         public Session nested() {
-            return switch (this) {
-                case SAVING, NESTED_SAVING -> NESTED_SAVING;
-                case LOADING, NESTED_LOADING -> NESTED_LOADING;
-                default -> UNKNOWN;
-            };
+            return new Session(type, layer + 1);
+        }
+
+        @Override
+        public String toString() {
+            return layer == 0
+                    ? type().name()
+                    : String.format("%s -> NESTED BY %d", type().name(), layer);
         }
     }
 
@@ -154,7 +150,7 @@ public record Specs<T>(T t, ConfigType type, String fileName) {
     }
 
     private String loggerPrefix(Session session) {
-        return String.format("[%s](%s)", fileName, session.semanticName());
+        return String.format("[%s](%s)", fileName, session);
     }
 
     private Field[] fields() {
