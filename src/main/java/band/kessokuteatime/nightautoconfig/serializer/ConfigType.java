@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.serializer;
 
+import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.util.Utils;
 
@@ -19,6 +20,10 @@ public enum ConfigType {
     }
 
     public Path getConfigPath(Config definition) {
-        return Utils.getConfigFolder().resolve(definition.name() + suffix());
+        return Utils.getConfigFolder().resolve(definition.name() + "." + suffix());
+    }
+
+    public <T extends ConfigData> NightConfigSerializer<T> serializer(Config definition, Class<T> configClass) {
+        return new NightConfigSerializer<>(definition, configClass, this);
     }
 }
