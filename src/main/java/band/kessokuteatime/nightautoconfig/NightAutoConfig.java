@@ -18,6 +18,5 @@ public class NightAutoConfig implements ClientModInitializer {
 		AutoConfig.register(ExampleConfig.class, ConfigType.TOML::serializer);
 		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
 		ExampleConfig config = holder.getConfig();
-        LOGGER.info("Example int: {}", config.exampleInt);
 	}
 }

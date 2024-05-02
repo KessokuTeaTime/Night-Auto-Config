@@ -30,7 +30,7 @@ public abstract class NightConfigSerializer<
         this.definition = definition;
         this.configClass = configClass;
         this.type = type;
-        this.builder = builder;
+        this.builder = (B) builder.preserveInsertionOrder();
 
         this.specs = new Specs<>(createDefault(), type, type.getFileName(definition));
     }

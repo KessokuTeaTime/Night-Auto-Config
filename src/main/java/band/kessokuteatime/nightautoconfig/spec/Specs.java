@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static band.kessokuteatime.nightautoconfig.NightAutoConfig.LOGGER;
+
 public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
     public enum Session {
         SAVING, LOADING;
@@ -30,6 +32,71 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
     }
 
     public int correct(Config config, Session session) {
+        // Process nested configurations
+        AtomicInteger nestedCorrections = new AtomicInteger();
+        Arrays.stream(nestedFields())
+                .forEach(field -> {
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        List<String> paths = getPath(field);
+                        List<String> deeperNestedPaths = Stream.concat(nestedPaths.stream(), paths.stream()).toList();
+                        Config nestedConfig = config.get(paths);
+
+                        Specs<Object> nestedSpecs = new Specs<>(value, type, deeperNestedPaths);
+                        if (nestedConfig != null) {
+                            // Correct the nested config
+                            nestedCorrections.addAndGet(nestedSpecs.correct(nestedConfig, session));
+                        } else {
+                            // Correct and fallback to the default config (shouldn't happen)
+                            Config fallbackConfig = type.wrap(value);
+                            nestedSpecs.correct(fallbackConfig, session);
+                            config.set(paths, fallbackConfig);
+
+                            nestedCorrections.addAndGet(fallbackConfig.entrySet().size());
+                            LOGGER.warn(
+                                    "{} Missing nested configuration for {}! Falling back to the default one",
+                                    loggerPrefix(session), String.join(".", paths)
+                            );
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        // Process missing enums
+        AtomicInteger enumCorrections = new AtomicInteger();
+        Arrays.stream(nonNestedFields())
+                .filter(field -> field.getType().isEnum())
+                .forEach(field -> {
+                    List<String> paths = getPath(field);
+
+                    if (!config.contains(paths)) {
+                        try {
+                            field.setAccessible(true);
+                            Object value = field.get(t);
+
+                            if (value != null) {
+                                config.set(paths, value);
+
+                                enumCorrections.incrementAndGet();
+                                LOGGER.warn(
+                                        "{} Missing enum for {}! Falling back to the default one",
+                                        loggerPrefix(session), String.join(".", paths)
+                                );
+                            } else {
+                                LOGGER.error(
+                                        "{} Missing enum for {} while the default value is null!",
+                                        loggerPrefix(session), String.join(".", paths)
+                                );
+                            }
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
         ConfigSpec spec = new ConfigSpec();
 
         appendNestedSpecs(spec);
@@ -40,57 +107,24 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
         ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
             String pathString = String.join(",", path);
-            NightAutoConfig.LOGGER.info(
+            LOGGER.info(
                     "{} Corrected {}: was {}, is now {}",
                     loggerPrefix(session), pathString, incorrectValue, correctedValue
             );
         };
 
-        // Process nested configurations
-        AtomicInteger nestedCorrections = new AtomicInteger();
-        Arrays.stream(fields())
-                .filter(Specs::isNested)
-                .forEach(field -> {
-                    try {
-                        field.setAccessible(true);
-                        Object value = field.get(t);
-
-                        List<String> path = getPath(field);
-                        List<String> deeperNestedPaths = Stream.concat(nestedPaths.stream(), path.stream()).toList();
-                        Config nestedConfig = config.get(path);
-
-                        Specs<Object> nestedSpecs = new Specs<>(value, type, deeperNestedPaths);
-                        if (nestedConfig != null) {
-                            // Correct the nested config
-                            nestedCorrections.addAndGet(nestedSpecs.correct(nestedConfig, session));
-                        } else {
-                            // Correct and fallback to the default config (shouldn't happen)
-                            Config fallbackConfig = type.wrap(value);
-                            nestedCorrections.addAndGet(nestedSpecs.correct(fallbackConfig, session));
-                            config.set(path, fallbackConfig);
-
-                            NightAutoConfig.LOGGER.warn(
-                                    "{} Missing nested config for {}! Falling back to the default one",
-                                    loggerPrefix(session), String.join(".", path)
-                            );
-                        }
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-        final int corrections = spec.correct(config, listener);
+        final int corrections = spec.correct(config, listener) + enumCorrections.get();
         final int totalCorrections = corrections + nestedCorrections.get();
 
         if (nestedCorrections.get() == 0) {
             if (corrections > 0) {
-                NightAutoConfig.LOGGER.info(
+                LOGGER.info(
                         "{} Corrected {} {}",
                         loggerPrefix(session), corrections, (corrections == 1)? "item" : "items"
                 );
             }
         } else {
-            NightAutoConfig.LOGGER.info(
+            LOGGER.info(
                     "{} Corrected {} {} in total ({} nested)",
                     loggerPrefix(session), totalCorrections, (totalCorrections == 1)? "item" : "items", nestedCorrections
             );
@@ -179,12 +213,12 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         Arrays.stream(nonNestedFields())
                 .forEach(field -> {
                     try {
-                        field.setAccessible(true);
-                        Object value = field.get(t);
-
                         if (isNested(field)) {
                             return;
                         }
+
+                        field.setAccessible(true);
+                        Object value = field.get(t);
 
                         final boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
@@ -348,7 +382,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                                 Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
                                 spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
                             } else {
-                                NightAutoConfig.LOGGER.error(
+                                LOGGER.error(
                                         "Invalid @SpecInList annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
                                         getPath(field)
                                 );

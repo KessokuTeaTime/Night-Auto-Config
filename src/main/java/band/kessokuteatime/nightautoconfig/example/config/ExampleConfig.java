@@ -71,8 +71,8 @@ public class ExampleConfig implements ConfigData {
 
         public ExampleEnum innerEnum = ExampleEnum.SECOND;
 
-        @SpecEnumGetMethod(EnumGetMethod.ORDINAL_OR_NAME_IGNORECASE)
-        @SpecInList(definition = ExampleEnumValuesInList.class)
+        @SpecEnumGetMethod(EnumGetMethod.ORDINAL_OR_NAME)
+        //@SpecInList(definition = ExampleEnumValuesInList.class)
         public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
     }
 }
