@@ -2,6 +2,7 @@ package band.kessokuteatime.nightautoconfig;
 
 import band.kessokuteatime.nightautoconfig.example.config.ExampleConfig;
 import band.kessokuteatime.nightautoconfig.serializer.ConfigType;
+import com.electronwill.nightconfig.core.ConfigSpec;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,5 +19,8 @@ public class NightAutoConfig implements ClientModInitializer {
 		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
 		ExampleConfig config = holder.getConfig();
         LOGGER.info("Example int: {}", config.exampleInt);
+
+		ConfigSpec spec = new ConfigSpec();
+		//spec.defineOfClass();
 	}
 }
