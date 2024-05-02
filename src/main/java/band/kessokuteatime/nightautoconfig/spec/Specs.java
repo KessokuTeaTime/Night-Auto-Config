@@ -15,29 +15,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-public record Specs<T>(T t, ConfigType type, String fileName) {
-    public record Session(Type type, int layer) {
-        public enum Type {
-            SAVING, LOADING;
-        }
+public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
+    public enum Session {
+        SAVING, LOADING;
+    }
 
-        public static final Session SAVING = new Session(Type.SAVING, 0);
-
-        public static final Session LOADING = new Session(Type.LOADING, 0);
-
-        public Session nested() {
-            return new Session(type, layer + 1);
-        }
-
-        @Override
-        public String toString() {
-            return layer == 0
-                    ? type().name()
-                    : String.format("%s -> Nested by %d", type().name(), layer);
-        }
+    public Specs(T t, ConfigType type, String fileName) {
+        this(t, type, Collections.singletonList(fileName));
     }
 
     public int correct(Config config, Session session) {
@@ -65,16 +54,17 @@ public record Specs<T>(T t, ConfigType type, String fileName) {
                         Object value = field.get(t);
 
                         List<String> path = getPath(field);
+                        List<String> deeperNestedPaths = Stream.concat(nestedPaths.stream(), path.stream()).toList();
                         Config nestedConfig = config.get(path);
 
-                        Specs<Object> nestedSpecs = new Specs<>(value, type, fileName);
+                        Specs<Object> nestedSpecs = new Specs<>(value, type, deeperNestedPaths);
                         if (nestedConfig != null) {
                             // Correct the nested config
-                            nestedCorrections.addAndGet(nestedSpecs.correct(nestedConfig, session.nested()));
+                            nestedCorrections.addAndGet(nestedSpecs.correct(nestedConfig, session));
                         } else {
                             // Correct and fallback to the default config (shouldn't happen)
                             Config fallbackConfig = type.wrap(value);
-                            nestedCorrections.addAndGet(nestedSpecs.correct(fallbackConfig, session.nested()));
+                            nestedCorrections.addAndGet(nestedSpecs.correct(fallbackConfig, session));
                             config.set(path, fallbackConfig);
 
                             NightAutoConfig.LOGGER.warn(
@@ -149,7 +139,7 @@ public record Specs<T>(T t, ConfigType type, String fileName) {
     }
 
     private String loggerPrefix(Session session) {
-        return String.format("[%s](%s)", fileName, session);
+        return String.format("(%s)[%s]", session, String.join(" -> ", nestedPaths));
     }
 
     private Field[] fields() {
