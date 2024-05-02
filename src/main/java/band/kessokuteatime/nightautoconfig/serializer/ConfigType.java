@@ -23,7 +23,10 @@ public enum ConfigType {
         return Utils.getConfigFolder().resolve(definition.name() + "." + suffix());
     }
 
-    public <T extends ConfigData> NightConfigSerializer<T> serializer(Config definition, Class<T> configClass) {
-        return new NightConfigSerializer<>(definition, configClass, this);
+    public <T extends ConfigData> NightConfigSerializer<T, ?, ?, ?> serializer(Config definition, Class<T> configClass) {
+        return switch (this) {
+            case JSON -> new GeneralNightConfigSerializer<>(definition, configClass, this);
+            case YAML, TOML, HOCON -> new CommentedNightConfigSerializer<>(definition, configClass, this);
+        };
     }
 }

@@ -2,7 +2,7 @@ package band.kessokuteatime.nightautoconfig.serializer;
 
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.core.file.FileConfigBuilder;
+import com.electronwill.nightconfig.core.file.GenericBuilder;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
@@ -10,33 +10,29 @@ import me.shedaniel.autoconfig.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.function.UnaryOperator;
 
-public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {
+public abstract class NightConfigSerializer<
+        T extends ConfigData,
+        Conf extends com.electronwill.nightconfig.core.Config,
+        FileConf extends FileConfig,
+        B extends GenericBuilder<Conf, FileConf>
+        > implements ConfigSerializer<T> {
     protected final Config definition;
     protected final Class<T> configClass;
     protected final ConfigType type;
-    protected final FileConfigBuilder builder;
+    protected final B builder;
 
-    public NightConfigSerializer(Config definition, Class<T> configClass, ConfigType type, FileConfigBuilder builder) {
+    public NightConfigSerializer(Config definition, Class<T> configClass, ConfigType type, B builder) {
         this.definition = definition;
         this.configClass = configClass;
         this.type = type;
         this.builder = builder;
     }
 
-    public NightConfigSerializer(Config definition, Class<T> configClass, ConfigType type, UnaryOperator<FileConfigBuilder> builder) {
-        this(definition, configClass, type, builder.apply(FileConfig.builder(type.getConfigPath(definition))));
-    }
-
-    public NightConfigSerializer(Config definition, Class<T> configClass, ConfigType type) {
-        this(definition, configClass, type, UnaryOperator.identity());
-    }
-
     @Override
     public void serialize(T t) throws SerializationException {
         if (Files.exists(type.getConfigPath(definition))) {
-            FileConfig config = new ObjectConverter().toConfig(t, builder::build);
+            FileConf config = new ObjectConverter().toConfig(t, builder::build);
             config.save();
             config.close();
         } else {
@@ -52,7 +48,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     @Override
     public T deserialize() throws SerializationException {
         if (Files.exists(type.getConfigPath(definition))) {
-            FileConfig config = builder.build();
+            FileConf config = builder.build();
             config.load();
             return new ObjectConverter().toObject(config, this::createDefault);
         } else {
