@@ -22,7 +22,8 @@ public record Specs<T>(T t, ConfigType type) {
         SAVING("Saving"),
         NESTED_SAVING("Saving/Nested"),
         LOADING("Loading"),
-        NESTED_LOADING("Loading/Nested");
+        NESTED_LOADING("Loading/Nested"),
+        UNKNOWN("Unknown");
 
         private final String name;
 
@@ -33,12 +34,28 @@ public record Specs<T>(T t, ConfigType type) {
         public String semanticName() {
             return name;
         }
+
+        public Session nested() {
+            return switch (this) {
+                case SAVING, NESTED_SAVING -> NESTED_SAVING;
+                case LOADING, NESTED_LOADING -> NESTED_LOADING;
+                default -> UNKNOWN;
+            };
+        }
+
+        public Session parent() {
+            return switch (this) {
+                case SAVING, NESTED_SAVING -> SAVING;
+                case LOADING, NESTED_LOADING -> LOADING;
+                default -> UNKNOWN;
+            };
+        }
     }
 
     public void correct(Config config, Session session) {
         ConfigSpec spec = new ConfigSpec();
 
-        appendBasicSpecs(spec);
+        appendBasicSpecs(spec, session);
         appendInRangeSpecs(spec);
 
         ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
@@ -49,17 +66,13 @@ public record Specs<T>(T t, ConfigType type) {
             );
         };
 
-        int count = correct(config, listener);
+        int count = spec.correct(config, listener);
         if (count > 0) {
             NightAutoConfig.LOGGER.info(
-                    "({}) Corrected {} {}",
+                    "({}) Corrected {} {} in total",
                     session.semanticName(), count, (count == 1)? "item" : "items"
             );
         }
-    }
-
-    private int correct(Config config, ConfigSpec.CorrectionListener listener) {
-
     }
 
     /**
@@ -82,10 +95,12 @@ public record Specs<T>(T t, ConfigType type) {
         if (path != null) {
             return StringUtils.split(path.value(), '.');
         }
+
         AdvancedPath advancedPath = annotatedElement.getDeclaredAnnotation(AdvancedPath.class);
         if (advancedPath != null) {
             return Arrays.asList(advancedPath.value());
         }
+
         return null;
     }
 
@@ -101,7 +116,7 @@ public record Specs<T>(T t, ConfigType type) {
         return t.getClass().getDeclaredFields();
     }
 
-    private void appendBasicSpecs(ConfigSpec spec) {
+    private void appendBasicSpecs(ConfigSpec spec, Session session) {
         Arrays.stream(fields())
                 .forEach(field -> {
                     try {
@@ -111,7 +126,7 @@ public record Specs<T>(T t, ConfigType type) {
                         boolean isNested = field.getType().isAnnotationPresent(Nested.class);
 
                         if (isNested) {
-                            System.out.println(new Specs<>(value, type).build());
+                            new Specs<>(value, type).correct(type.wrap(value), session.nested());
                             return;
                         }
 
