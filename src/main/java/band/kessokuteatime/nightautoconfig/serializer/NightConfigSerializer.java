@@ -10,7 +10,6 @@ import me.shedaniel.autoconfig.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.util.function.UnaryOperator;
 
 public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {

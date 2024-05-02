@@ -16,9 +16,9 @@ public class NightAutoConfig implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		AutoConfig.register(ExampleConfig.class, ConfigType.JSON::serializer);
+		AutoConfig.register(ExampleConfig.class, ConfigType.TOML::serializer);
 		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
 		ExampleConfig config = holder.getConfig();
-		LOGGER.info("Example string: " + config.exampleString);
+        LOGGER.info("Example int: {}", config.exampleInt);
 	}
 }
