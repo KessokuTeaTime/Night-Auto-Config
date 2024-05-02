@@ -24,7 +24,7 @@ public abstract class NightConfigSerializer<
     protected final ConfigType type;
     protected final B builder;
 
-    protected final Specs specs;
+    protected final Specs<T> specs;
 
     public NightConfigSerializer(Config definition, Class<T> configClass, ConfigType type, B builder) {
         this.definition = definition;
