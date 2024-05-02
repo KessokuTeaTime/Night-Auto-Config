@@ -8,9 +8,9 @@ import java.util.List;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface SpecInRangeInt {
-    int min() default 0;
-    int max() default Integer.MAX_VALUE;
-
-    List<Class<?>> associatedTypes = List.of(Integer.class, int.class);
+public @interface SpecInRangeByte {
+    byte min() default 0;
+    byte max() default Byte.MAX_VALUE;
+    
+    List<Class<?>> associatedTypes = List.of(Byte.class, byte.class);
 }
