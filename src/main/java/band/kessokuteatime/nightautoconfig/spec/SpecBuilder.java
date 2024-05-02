@@ -26,14 +26,27 @@ public record SpecBuilder<T>(T t) {
                 .forEach(field -> {
                     try {
                         field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
                         if (field.isAnnotationPresent(SpecElementValidator.class)) {
                             SpecElementValidator annotation = field.getAnnotation(SpecElementValidator.class);
                             Predicate<Object> validator = annotation.value().getDeclaredConstructor().newInstance();
-                            spec.define(field.getName(), field.get(t), validator);
+
+                            if (isFloat) {
+                                spec.define(field.getName(), ((Float) value).doubleValue(), validator);
+                            } else {
+                                spec.define(field.getName(), value, validator);
+                            }
                         } else {
-                            System.out.println(field.get(t));
-                            spec.define(field.getName(), field.get(t));
+                            System.out.println(field.getName() + ", " + value);
+
+                            if (isFloat) {
+                                spec.define(field.getName(), ((Float) value).doubleValue());
+                            } else {
+                                spec.define(field.getName(), value);
+                            }
                         }
                     } catch (IllegalAccessException | InvocationTargetException | InstantiationException |
                              NoSuchMethodException e) {
@@ -82,15 +95,12 @@ public record SpecBuilder<T>(T t) {
                         field.setAccessible(true);
                         SpecInRangeDouble annotation = field.getAnnotation(SpecInRangeDouble.class);
                         Object obj = field.get(t);
-                        double value;
 
-                        if (obj instanceof Double) {
-                            value = (Double) obj;
-                        } else {
-                            value = ((Float) obj).doubleValue();
+                        if (List.of(double.class, Double.class).contains(field.getType())) {
+                            spec.defineInRange(field.getName(), (double) obj, annotation.min(), annotation.max());
+                        } else if (List.of(float.class, Float.class).contains(field.getType())) {
+                            spec.defineInRange(field.getName(), ((Float) obj).doubleValue(), annotation.min(), annotation.max());
                         }
-
-                        spec.defineInRange(field.getName(), value, annotation.min(), annotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
