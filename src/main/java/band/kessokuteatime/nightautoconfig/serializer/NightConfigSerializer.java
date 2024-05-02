@@ -32,7 +32,7 @@ public abstract class NightConfigSerializer<
         this.type = type;
         this.builder = builder;
 
-        this.specs = new Specs<>(createDefault(), type);
+        this.specs = new Specs<>(createDefault(), type, type.getFileName(definition));
     }
 
     @Override

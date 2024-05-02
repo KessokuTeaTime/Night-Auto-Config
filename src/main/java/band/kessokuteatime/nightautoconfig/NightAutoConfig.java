@@ -19,8 +19,5 @@ public class NightAutoConfig implements ClientModInitializer {
 		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
 		ExampleConfig config = holder.getConfig();
         LOGGER.info("Example int: {}", config.exampleInt);
-
-		ConfigSpec spec = new ConfigSpec();
-		//spec.defineOfClass();
 	}
 }

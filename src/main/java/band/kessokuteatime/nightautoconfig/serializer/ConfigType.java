@@ -24,8 +24,12 @@ public enum ConfigType {
         return suffix;
     }
 
+    public String getFileName(Config definition) {
+        return definition.name() + "." + suffix();
+    }
+
     public Path getConfigPath(Config definition) {
-        return Utils.getConfigFolder().resolve(definition.name() + "." + suffix());
+        return Utils.getConfigFolder().resolve(getFileName(definition));
     }
 
     public <T extends ConfigData> NightConfigSerializer<T, ?, ?, ?> serializer(Config definition, Class<T> configClass) {
@@ -42,7 +46,7 @@ public enum ConfigType {
             case TOML -> TomlFormat.newConfig();
             case HOCON -> HoconFormat.newConfig();
         };
-        new ObjectConverter().toObject(config, object);
+        new ObjectConverter().toConfig(object, config);
         return config;
     }
 }

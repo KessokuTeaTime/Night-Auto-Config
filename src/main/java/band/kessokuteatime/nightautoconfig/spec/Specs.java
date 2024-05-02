@@ -15,9 +15,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-public record Specs<T>(T t, ConfigType type) {
+public record Specs<T>(T t, ConfigType type, String fileName) {
     public enum Session {
         SAVING("Saving"),
         NESTED_SAVING("Saving/Nested"),
@@ -42,37 +43,73 @@ public record Specs<T>(T t, ConfigType type) {
                 default -> UNKNOWN;
             };
         }
-
-        public Session parent() {
-            return switch (this) {
-                case SAVING, NESTED_SAVING -> SAVING;
-                case LOADING, NESTED_LOADING -> LOADING;
-                default -> UNKNOWN;
-            };
-        }
     }
 
-    public void correct(Config config, Session session) {
+    public int correct(Config config, Session session) {
         ConfigSpec spec = new ConfigSpec();
 
-        appendBasicSpecs(spec, session);
+        appendNestedSpecs(spec);
+        appendBasicSpecs(spec);
         appendInRangeSpecs(spec);
 
         ConfigSpec.CorrectionListener listener = (action, path, incorrectValue, correctedValue) -> {
             String pathString = String.join(",", path);
             NightAutoConfig.LOGGER.info(
-                    "({}}) Corrected {}: was {}, is now {}",
-                    session.semanticName(), pathString, incorrectValue, correctedValue
+                    "{} Corrected {}: was {}, is now {}",
+                    loggerPrefix(session), pathString, incorrectValue, correctedValue
             );
         };
 
-        int count = spec.correct(config, listener);
-        if (count > 0) {
+        // Process nested configurations
+        AtomicInteger nestedCorrections = new AtomicInteger();
+        Arrays.stream(fields())
+                .filter(Specs::isNested)
+                .forEach(field -> {
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        List<String> path = getPath(field);
+                        Config nestedConfig = config.get(path);
+
+                        Specs<Object> nestedSpecs = new Specs<>(value, type, fileName);
+                        if (nestedConfig != null) {
+                            // Correct the nested config
+                            nestedCorrections.addAndGet(nestedSpecs.correct(nestedConfig, session.nested()));
+                        } else {
+                            // Correct and fallback to the default config (shouldn't happen)
+                            Config fallbackConfig = type.wrap(value);
+                            nestedCorrections.addAndGet(nestedSpecs.correct(fallbackConfig, session.nested()));
+                            config.set(path, fallbackConfig);
+
+                            NightAutoConfig.LOGGER.warn(
+                                    "{} Missing nested config for {}! Falling back to the default one.",
+                                    loggerPrefix(session), String.join(".", path)
+                            );
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        final int corrections = spec.correct(config, listener);
+        final int totalCorrections = corrections + nestedCorrections.get();
+
+        if (nestedCorrections.get() == 0) {
+            if (corrections > 0) {
+                NightAutoConfig.LOGGER.info(
+                        "{} Corrected {} {}",
+                        loggerPrefix(session), corrections, (corrections == 1)? "item" : "items"
+                );
+            }
+        } else {
             NightAutoConfig.LOGGER.info(
-                    "({}) Corrected {} {} in total",
-                    session.semanticName(), count, (count == 1)? "item" : "items"
+                    "{} Corrected {} {} in total ({} nested)",
+                    loggerPrefix(session), totalCorrections, (totalCorrections == 1)? "item" : "items", nestedCorrections
             );
         }
+
+        return totalCorrections;
     }
 
     /**
@@ -112,21 +149,53 @@ public record Specs<T>(T t, ConfigType type) {
         return field -> availableTypes.contains(field.getType());
     }
 
+    static boolean isNested(Field field) {
+        return field.getType().isAnnotationPresent(Nested.class);
+    }
+
+    private String loggerPrefix(Session session) {
+        return String.format("[%s](%s)", fileName, session.semanticName());
+    }
+
     private Field[] fields() {
         return t.getClass().getDeclaredFields();
     }
 
-    private void appendBasicSpecs(ConfigSpec spec, Session session) {
-        Arrays.stream(fields())
+    private Field[] nestedFields() {
+        return Arrays.stream(fields())
+                    .filter(Specs::isNested)
+                    .toArray(Field[]::new);
+    }
+
+    private Field[] nonNestedFields() {
+        return Arrays.stream(fields())
+                    .filter(field -> !isNested(field))
+                    .toArray(Field[]::new);
+    }
+
+    private void appendNestedSpecs(ConfigSpec spec) {
+        Arrays.stream(nestedFields())
                 .forEach(field -> {
                     try {
                         field.setAccessible(true);
                         Object value = field.get(t);
 
-                        boolean isNested = field.getType().isAnnotationPresent(Nested.class);
+                        Config nestedConfig = type.wrap(value);
+                        spec.define(getPath(field), nestedConfig);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
 
-                        if (isNested) {
-                            new Specs<>(value, type).correct(type.wrap(value), session.nested());
+    private void appendBasicSpecs(ConfigSpec spec) {
+        Arrays.stream(nonNestedFields())
+                .forEach(field -> {
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(t);
+
+                        if (isNested(field)) {
                             return;
                         }
 
@@ -173,7 +242,7 @@ public record Specs<T>(T t, ConfigType type) {
     }
 
     private void appendInRangeSpecs(ConfigSpec spec) {
-        Field[] fields = t.getClass().getDeclaredFields();
+        Field[] fields = nonNestedFields();
 
         // Byte
         Arrays.stream(fields)
