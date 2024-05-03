@@ -1,93 +1,135 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
-import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
-import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
-import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
-import band.kessokuteatime.nightautoconfig.converter.MapToConfigConverter;
-import band.kessokuteatime.nightautoconfig.spec.InListProvider;
-import com.electronwill.nightconfig.core.EnumGetMethod;
+import band.kessokuteatime.nightautoconfig.converter.type.TypeConverter;
 import com.electronwill.nightconfig.core.conversion.Conversion;
-import com.electronwill.nightconfig.core.conversion.Path;
-import com.electronwill.nightconfig.core.conversion.SpecEnum;
-import com.electronwill.nightconfig.core.conversion.SpecFloatInRange;
+import com.electronwill.nightconfig.core.conversion.Converter;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
-@Config(name = "example")
-public class ExampleConfig implements ConfigData {
-    public enum ExampleEnum {
-        FIRST,
-        SECOND,
-        THIRD
-    }
+@Config(name = "autoconfig1u_example")
+/*
+@Config.Gui.Background("minecraft:textures/block/oak_planks.png")
+@Config.Gui.CategoryBackground(
+        category = "b",
+        background = "minecraft:textures/block/stone.png"
+)
 
-    public static class ExampleStringInListProvider implements InListProvider<String> {
-        @Override
-        public Collection<String> acceptableValues() {
-            return List.of("case 1", "case 2", "case 3");
-        }
-    }
-
-    public static class ExampleEnumInListProvider implements InListProvider<ExampleEnum> {
-        @Override
-        public Collection<ExampleEnum> acceptableValues() {
-            return List.of(ExampleEnum.FIRST, ExampleEnum.SECOND);
-        }
-    }
-
-    public int exampleInt = 10;
-
-    public double exampleDouble = 3.14159;
-
-    @SpecFloatInRange(min = 0.0F, max = 10.0F)
-    @Conversion(FloatToDoubleConverter.Impl.class)
-    public float exampleFloat = 2.71828F;
-
-    public boolean exampleBoolean = true;
-
-    public String exampleString = "Hello, World!";
-
-    @Path("stringWithCustomKey")
-    public String exampleString2 = "Another String.";
-
-    //@ConfigEntry.Category("category")
-    public String categorizedString = "Categorized!";
-
-    public ArrayList<String> exampleStringArrayList = new ArrayList<>(List.of(
-            "one",
-            "two",
-            "three"
-    ));
-
-    @Conversion(MapToConfigConverter.StringKey.Impl.class)
-    public Map<String, Integer> exampleStringIntMap = new LinkedHashMap<>(Map.of(
-            "one", 1,
-            "two", 2,
-            "three", 3
-    ));
-
+ */
+public class ExampleConfig extends PartitioningSerializer.GlobalData {
+    @ConfigEntry.Category("a")
     @ConfigEntry.Gui.TransitiveObject
-    //@ConfigEntry.Category("inner")
-    public InnerConfig innerConfig = new InnerConfig();
+    public ModuleA moduleA = new ModuleA();
+
+    @ConfigEntry.Category("a")
+    @ConfigEntry.Gui.TransitiveObject
+    public ModuleEmpty moduleEmpty = new ModuleEmpty();
+
+    @ConfigEntry.Category("b")
+    @ConfigEntry.Gui.TransitiveObject
+    public ModuleB moduleB = new ModuleB();
+
+    @Config(name = "module_a")
+    @Nested
+    public static class ModuleA implements ConfigData {
+        @ConfigEntry.Gui.PrefixText
+        public boolean aBoolean = true;
+
+        @ConfigEntry.Gui.Tooltip(count = 2)
+        public ExampleEnum anEnum;
+
+        @ConfigEntry.Gui.Tooltip(count = 2)
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public ExampleEnum anEnumWithButton;
+
+        public String aString;
+
+        @ConfigEntry.Gui.CollapsibleObject(
+                startExpanded = true
+        )
+        public ExamplePairOfIntPairs anObject;
+
+        public List<Integer> list;
+
+        public int[] array;
+
+        public List<ExamplePairOfInts> complexList;
+
+        public ExamplePairOfInts[] complexArray;
+
+        public ModuleA() {
+            this.anEnum = ExampleEnum.FOO;
+            this.anEnumWithButton = ExampleEnum.FOO;
+            this.aString = "hello";
+            this.anObject = new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
+            this.list = Arrays.asList(1, 2, 3);
+            this.array = new int[]{1, 2, 3};
+            this.complexList = Arrays.asList(new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7));
+            this.complexArray = new ExamplePairOfInts[]{new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)};
+        }
+    }
+
+    @Config(name = "empty")
+    @Nested
+    public static class ModuleEmpty implements ConfigData {
+    }
 
     @Nested
-    public static class InnerConfig {
-        public int innerInt = 42;
+    @Config(name = "module_b")
+    public static class ModuleB implements ConfigData {
+        @ConfigEntry.BoundedDiscrete(min = -1000L, max = 2000L)
+        public int intSlider = 500;
 
-        public String innerString = "S.T.A.Y.";
+        @ConfigEntry.BoundedDiscrete(min = -1000L, max = 2000L)
+        public Long longSlider = 500L;
 
-        @SpecInList(definition = ExampleStringInListProvider.class)
-        public String restrictedString = "case 1";
+        @ConfigEntry.Gui.TransitiveObject
+        public ExamplePairOfIntPairs anObject = new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
 
-        @SpecOfClass(ExampleEnum.class)
-        public ExampleEnum innerEnum = ExampleEnum.SECOND;
+        @ConfigEntry.Gui.Excluded
+        public List<ExamplePairOfInts> aList = Arrays.asList(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
 
-        @SpecEnum(method = EnumGetMethod.ORDINAL_OR_NAME)
-        @SpecInList(definition = ExampleEnumInListProvider.class)
-        public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
+        @ConfigEntry.ColorPicker
+        public int color = 16777215;
+    }
+
+    public static class ExamplePairOfIntPairs {
+        @ConfigEntry.Gui.CollapsibleObject
+        public ExamplePairOfInts first;
+
+        @ConfigEntry.Gui.CollapsibleObject
+        public ExamplePairOfInts second;
+
+        public ExamplePairOfIntPairs() {
+            this(new ExamplePairOfInts(), new ExamplePairOfInts());
+        }
+
+        public ExamplePairOfIntPairs(ExamplePairOfInts first, ExamplePairOfInts second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
+    public static class ExamplePairOfInts {
+        public int foo;
+        public int bar;
+
+        public ExamplePairOfInts() {
+            this(1, 2);
+        }
+
+        public ExamplePairOfInts(int foo, int bar) {
+            this.foo = foo;
+            this.bar = bar;
+        }
+    }
+
+    public enum ExampleEnum {
+        FOO, BAR, BAZ
     }
 }

@@ -14,6 +14,7 @@ import me.shedaniel.autoconfig.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.UnaryOperator;
 
 public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {
@@ -66,7 +67,8 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
 
     @Override
     public void serialize(T t) throws SerializationException {
-        if (Files.exists(type.getConfigPath(definition))) {
+        Path path = type.getConfigPath(definition);
+        if (Files.exists(path)) {
             FileConfig config = new ObjectConverter().toConfig(t, builder::build);
 
             NightAutoConfig.normalize(config);
@@ -75,18 +77,19 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             config.save();
             config.close();
         } else {
-            try {
-                Files.createFile(type.getConfigPath(definition));
-                serialize(t);
-            } catch (IOException e) {
-                throw new SerializationException(e);
+            final boolean succeed = path.toFile().mkdirs();
+            serialize(t);
+
+            if (!succeed) {
+                throw new SerializationException(new Exception("Failed to create directory: " + path));
             }
         }
     }
 
     @Override
     public T deserialize() throws SerializationException {
-        if (Files.exists(type.getConfigPath(definition))) {
+        Path path = type.getConfigPath(definition);
+        if (Files.exists(path)) {
             FileConfig config = builder.build();
             config.load();
 

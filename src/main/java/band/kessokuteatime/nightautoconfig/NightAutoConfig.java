@@ -1,11 +1,13 @@
 package band.kessokuteatime.nightautoconfig;
 
 import band.kessokuteatime.nightautoconfig.example.config.ExampleConfig;
+import band.kessokuteatime.nightautoconfig.example.config.NightExampleConfig;
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import com.electronwill.nightconfig.core.Config;
 import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.ConfigHolder;
+import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +17,15 @@ public class NightAutoConfig implements ClientModInitializer {
 
     @Override
 	public void onInitializeClient() {
-		AutoConfig.register(ExampleConfig.class, ConfigType.HOCON::defaultSerializer);
-		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
-		ExampleConfig config = holder.getConfig();
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            LOGGER.warn(
+                    "You're running {} in a development environment. This produces extra files for testing purposes.",
+                    NAME
+            );
+
+            AutoConfig.register(NightExampleConfig.class, ConfigType.TOML::defaultSerializer);
+            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.TOML::defaultSerializer));
+        }
     }
 
     public static <C extends Config> void normalize(C config) {
