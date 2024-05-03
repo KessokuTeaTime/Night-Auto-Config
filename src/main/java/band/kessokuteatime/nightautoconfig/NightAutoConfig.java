@@ -1,8 +1,7 @@
 package band.kessokuteatime.nightautoconfig;
 
 import band.kessokuteatime.nightautoconfig.example.config.ExampleConfig;
-import band.kessokuteatime.nightautoconfig.serializer.ConfigType;
-import com.electronwill.nightconfig.core.conversion.ObjectConverter;
+import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import net.fabricmc.api.ClientModInitializer;

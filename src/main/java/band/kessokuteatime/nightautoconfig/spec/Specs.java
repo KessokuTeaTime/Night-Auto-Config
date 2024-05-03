@@ -1,8 +1,7 @@
 package band.kessokuteatime.nightautoconfig.spec;
 
-import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.annotation.*;
-import band.kessokuteatime.nightautoconfig.serializer.ConfigType;
+import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.EnumGetMethod;

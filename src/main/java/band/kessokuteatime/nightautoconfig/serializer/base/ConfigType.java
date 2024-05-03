@@ -1,5 +1,7 @@
-package band.kessokuteatime.nightautoconfig.serializer;
+package band.kessokuteatime.nightautoconfig.serializer.base;
 
+import band.kessokuteatime.nightautoconfig.serializer.CommentedNightConfigSerializer;
+import band.kessokuteatime.nightautoconfig.serializer.GeneralNightConfigSerializer;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.hocon.HoconFormat;
 import com.electronwill.nightconfig.json.JsonFormat;

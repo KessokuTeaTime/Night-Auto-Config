@@ -1,5 +1,7 @@
 package band.kessokuteatime.nightautoconfig.serializer;
 
+import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
+import band.kessokuteatime.nightautoconfig.serializer.base.NightConfigSerializer;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileConfigBuilder;
 import me.shedaniel.autoconfig.ConfigData;
