@@ -21,21 +21,4 @@ public class NightAutoConfig implements ClientModInitializer {
 		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
 		ExampleConfig config = holder.getConfig();
     }
-
-	public static <T> T unsafeBaseModule(T t) {
-		try {
-			Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-			Field field = unsafeClass.getDeclaredField("theUnsafe");
-
-			field.setAccessible(true);
-			Unsafe unsafe = (Unsafe) field.get(null);
-
-			Module baseModule = Object.class.getModule();
-			long addr = unsafe.objectFieldOffset(Class.class.getDeclaredField("module"));
-			unsafe.getAndSetObject(t, addr, baseModule);
-			return t;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
 }
