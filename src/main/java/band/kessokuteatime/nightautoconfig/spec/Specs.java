@@ -11,10 +11,7 @@ import com.electronwill.nightconfig.core.utils.StringUtils;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -51,7 +48,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                             // Correct and fallback to the default config (shouldn't happen)
                             Config fallbackConfig = type.wrap(value);
                             nestedSpecs.correct(fallbackConfig, session);
-                            config.set(paths, getValue(field, fallbackConfig));
+                            config.set(paths, convertValue(field, fallbackConfig));
 
                             nestedCorrections.addAndGet(fallbackConfig.entrySet().size());
                             LOGGER.warn(
@@ -77,7 +74,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                             Object value = field.get(t);
 
                             if (value != null) {
-                                config.set(paths, getValue(field, value));
+                                config.set(paths, convertValue(field, value));
 
                                 enumCorrections.incrementAndGet();
                                 LOGGER.warn(
@@ -193,9 +190,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
             converted = value;
         }
 
-        // Special judge if value is a configuration instance
+        // Convert to universal config if value is a configuration instance
         if (converted instanceof Config) {
-            converted = type.wrap(value);
+            converted = ConfigType.DEFAULT_SIMPLE.wrap(converted);
         }
 
         return converted;
@@ -277,9 +274,6 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
     private <V extends Comparable<? super V>, E extends Comparable<E>> void appendInRangeSpec(ConfigSpec spec, Field field) {
         SpecInRange inRangeAnnotation = field.getAnnotation(SpecInRange.class);
         try {
-            field.setAccessible(true);
-            Object value = field.get(t);
-
             InRangeProvider<?> inRangeProvider = inRangeAnnotation.definition().getDeclaredConstructor().newInstance();
             if (field.getType() == inRangeProvider.min().getClass()) {
                 appendInRangeSpec(spec, field, (E) getValue(field), (E) convertValue(field, inRangeProvider.min()), (E) convertValue(field, inRangeProvider.max()));
