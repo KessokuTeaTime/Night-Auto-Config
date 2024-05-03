@@ -5,8 +5,7 @@ import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
-import band.kessokuteatime.nightautoconfig.converter.MapToConfigConverter;
-import band.kessokuteatime.nightautoconfig.spec.ValuesInList;
+import band.kessokuteatime.nightautoconfig.spec.InListProvider;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
 import com.electronwill.nightconfig.core.conversion.Path;
@@ -25,14 +24,14 @@ public class ExampleConfig implements ConfigData {
         THIRD
     }
 
-    public static class ExampleStringValuesInList implements ValuesInList<String> {
+    public static class ExampleStringInListProvider implements InListProvider<String> {
         @Override
         public Collection<String> acceptableValues() {
             return List.of("case 1", "case 2", "case 3");
         }
     }
 
-    public static class ExampleEnumValuesInList implements ValuesInList<ExampleEnum> {
+    public static class ExampleEnumInListProvider implements InListProvider<ExampleEnum> {
         @Override
         public Collection<ExampleEnum> acceptableValues() {
             return List.of(ExampleEnum.FIRST, ExampleEnum.SECOND);
@@ -80,14 +79,14 @@ public class ExampleConfig implements ConfigData {
 
         public String innerString = "S.T.A.Y.";
 
-        @SpecInList(definition = ExampleStringValuesInList.class)
+        @SpecInList(definition = ExampleStringInListProvider.class)
         public String restrictedString = "case 1";
 
         @SpecOfClass(ExampleEnum.class)
         public ExampleEnum innerEnum = ExampleEnum.SECOND;
 
         @SpecEnum(method = EnumGetMethod.ORDINAL_OR_NAME)
-        @SpecInList(definition = ExampleEnumValuesInList.class)
+        @SpecInList(definition = ExampleEnumInListProvider.class)
         public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
     }
 }

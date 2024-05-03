@@ -210,7 +210,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 });
     }
 
-    private <E extends Enum<E>> void appendBasicSpecs(ConfigSpec spec) {
+    private void appendBasicSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .filter(field -> !field.getType().isEnum()) // Enums are handled separately
                 .forEach(field -> {
@@ -263,28 +263,66 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         spec.defineInRange(getPath(field), value, min, max);
     }
 
+    private <V extends Comparable<? super V>> void appendInRangeSpec(ConfigSpec spec, Field field) {
+        SpecInRange inRangeAnnotation = field.getAnnotation(SpecInRange.class);
+        try {
+            field.setAccessible(true);
+            Object value = field.get(t);
+
+            InRangeProvider<?> inRangeProvider = inRangeAnnotation.definition().getDeclaredConstructor().newInstance();
+            if (field.getType() == inRangeProvider.min().getClass()) {
+                appendInRangeSpec(spec, field, (V) value, (V) inRangeProvider.min(), (V) inRangeProvider.max());
+            } else {
+                LOGGER.error(
+                        "Invalid @{} annotation for {}: range values must be of the same type as the field. Ignoring!",
+                        SpecInRange.class.getSimpleName(), getPath(field)
+                );
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void appendInRangeSpecs(ConfigSpec spec) {
         Field[] fields = nonNestedFields();
 
-        // Byte
+        // General
         Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeByte.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeByte.class))
+                .filter(field -> field.isAnnotationPresent(SpecInRange.class))
+                .forEach(field -> appendInRangeSpec(spec, field));
+
+        // Double
+        Arrays.stream(fields)
+                .filter(typeChecker(List.of(Double.class, double.class)))
+                .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
                 .forEach(field -> {
-                    SpecInRangeByte inRangeAnnotation = field.getAnnotation(SpecInRangeByte.class);
+                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
                     try {
-                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
+                        appendInRangeSpec(spec, field, (double) field.get(t), inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
                 });
 
-        // Short
+        // Float
         Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeShort.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeShort.class))
+                .filter(typeChecker(List.of(Float.class, float.class)))
+                .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
                 .forEach(field -> {
-                    SpecInRangeShort inRangeAnnotation = field.getAnnotation(SpecInRangeShort.class);
+                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
+                    try {
+                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), inRangeAnnotation.min(), inRangeAnnotation.max());
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        // Long
+        Arrays.stream(fields)
+                .filter(typeChecker(SpecInRangeLong.associatedTypes))
+                .filter(field -> field.isAnnotationPresent(SpecInRangeLong.class))
+                .forEach(field -> {
+                    SpecInRangeLong inRangeAnnotation = field.getAnnotation(SpecInRangeLong.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
@@ -305,12 +343,12 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     }
                 });
 
-        // Long
+        // Short
         Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeLong.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeLong.class))
+                .filter(typeChecker(SpecInRangeShort.associatedTypes))
+                .filter(field -> field.isAnnotationPresent(SpecInRangeShort.class))
                 .forEach(field -> {
-                    SpecInRangeLong inRangeAnnotation = field.getAnnotation(SpecInRangeLong.class);
+                    SpecInRangeShort inRangeAnnotation = field.getAnnotation(SpecInRangeShort.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
@@ -318,27 +356,14 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     }
                 });
 
-        // Float
+        // Byte
         Arrays.stream(fields)
-                .filter(typeChecker(List.of(Float.class, float.class)))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
+                .filter(typeChecker(SpecInRangeByte.associatedTypes))
+                .filter(field -> field.isAnnotationPresent(SpecInRangeByte.class))
                 .forEach(field -> {
-                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
+                    SpecInRangeByte inRangeAnnotation = field.getAnnotation(SpecInRangeByte.class);
                     try {
-                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), inRangeAnnotation.min(), inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-        // Double
-        Arrays.stream(fields)
-                .filter(typeChecker(List.of(Double.class, double.class)))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
-                .forEach(field -> {
-                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
-                    try {
-                        appendInRangeSpec(spec, field, (double) field.get(t), inRangeAnnotation.min(), inRangeAnnotation.max());
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -355,7 +380,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         field.setAccessible(true);
                         Object value = field.get(t);
 
-                        Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
+                        InListProvider<?> inListProvider = inListAnnotation.definition().getDeclaredConstructor().newInstance();
+                        Collection<?> acceptableValues = inListProvider.acceptableValues();
 
                         spec.defineInList(getPath(field), value, acceptableValues);
                     } catch (Exception e) {
@@ -364,76 +390,80 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 });
     }
 
+    private <E> void appendOfClassSpec(ConfigSpec spec, Field field) {
+        SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
+        try {
+            field.setAccessible(true);
+            Object value = field.get(t);
+
+            Class<?> ofClass = ofClassAnnotation.value();
+
+            if (ofClass.isAssignableFrom(field.getType())) {
+                spec.defineOfClass(getPath(field), (E) value, (Class<? super E>) ofClass);
+            } else {
+                LOGGER.error(
+                        "Invalid @{} annotation for {}: the field type is not a subclass of the specified class (the specified class is not assignable from the field type). Ignoring!",
+                        SpecOfClass.class.getSimpleName(), getPath(field)
+                );
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private <E> void appendOfClassSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .filter(field -> !field.getType().isEnum()) // Enums are handled separately
                 .filter(field -> field.isAnnotationPresent(SpecOfClass.class))
-                .forEach(field -> {
-                    SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
-                    try {
-                        field.setAccessible(true);
-                        Object value = field.get(t);
+                .forEach(field -> appendOfClassSpec(spec, field));
+    }
 
-                        Class<?> ofClass = ofClassAnnotation.value();
+    private <E extends Enum<E>> void appendEnumSpec(ConfigSpec spec, Field field) {
+        SpecEnum specEnum = field.getAnnotation(SpecEnum.class);
+        EnumGetMethod enumGetMethod = (specEnum != null) ? specEnum.method() : EnumGetMethod.NAME_IGNORECASE;
+        try {
+            field.setAccessible(true);
+            Object value = field.get(t);
 
-                        if (ofClass.isAssignableFrom(field.getType())) {
-                            spec.defineOfClass(getPath(field), (E) value, (Class<? super E>) ofClass);
-                        } else {
-                            LOGGER.error(
-                                    "Invalid @{} annotation for {}: the field type is not a subclass of the specified class. Ignoring!",
-                                    SpecOfClass.class.getSimpleName(), getPath(field)
-                            );
-                        }
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            if (field.isAnnotationPresent(SpecInList.class)) {
+                // Restricted
+                SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
+                Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
+
+                if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
+                    Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
+                    spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
+                } else {
+                    LOGGER.error(
+                            "Invalid @{} annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
+                            SpecInList.class.getSimpleName(), getPath(field)
+                    );
+                }
+            } else if (field.isAnnotationPresent(SpecOfClass.class)) {
+                // Restricted by class
+                // Currently cannot be handled by `defineOfClass` due to unknown issues
+                SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
+                Class<?> ofClass = ofClassAnnotation.value();
+                if (ofClass.isAssignableFrom(field.getType())) {
+                    spec.defineRestrictedEnum(getPath(field), (E) value, (List<E>) List.of(ofClass.getEnumConstants()), enumGetMethod);
+                } else {
+                    LOGGER.error(
+                            "Invalid @{} annotation for {}: the field type is not a subclass of the specified class (the specified class is not assignable from the field type). Ignoring!",
+                            SpecOfClass.class.getSimpleName(), getPath(field)
+                    );
+                }
+            }else {
+                // Unrestricted
+                spec.defineEnum(getPath(field), (E) value, enumGetMethod);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private <E extends Enum<E>> void appendEnumSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .filter(field -> field.getType().isEnum())
-                .forEach(field -> {
-                    SpecEnum specEnum = field.getAnnotation(SpecEnum.class);
-                    EnumGetMethod enumGetMethod = (specEnum != null) ? specEnum.method() : EnumGetMethod.NAME_IGNORECASE;
-                    try {
-                        field.setAccessible(true);
-                        Object value = field.get(t);
-
-                        if (field.isAnnotationPresent(SpecInList.class)) {
-                            // Restricted
-                            SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
-                            Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
-
-                            if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
-                                Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
-                                spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
-                            } else {
-                                LOGGER.error(
-                                        "Invalid @{} annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
-                                        SpecInList.class.getSimpleName(), getPath(field)
-                                );
-                            }
-                        } else if (field.isAnnotationPresent(SpecOfClass.class)) {
-                            // Restricted by class
-                            // Currently cannot be handled by `defineOfClass` due to unknown issues
-                            SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
-                            Class<?> ofClass = ofClassAnnotation.value();
-                            if (ofClass.isAssignableFrom(field.getType())) {
-                                spec.defineRestrictedEnum(getPath(field), (E) value, (List<E>) List.of(ofClass.getEnumConstants()), enumGetMethod);
-                            } else {
-                                LOGGER.error(
-                                        "Invalid @{} annotation for {}: the field type is not a subclass of the specified class. Ignoring!",
-                                        SpecOfClass.class.getSimpleName(), getPath(field)
-                                );
-                            }
-                        }else {
-                            // Unrestricted
-                            spec.defineEnum(getPath(field), (E) value, enumGetMethod);
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                .forEach(field -> appendEnumSpec(spec, field));
     }
 }
