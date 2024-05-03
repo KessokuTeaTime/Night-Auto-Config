@@ -57,10 +57,6 @@ public class ExampleConfig implements ConfigData {
     //@ConfigEntry.Category("category")
     public String categorizedString = "Categorized!";
 
-    @ConfigEntry.Gui.TransitiveObject
-    //@ConfigEntry.Category("inner")
-    public InnerConfig innerConfig = new InnerConfig();
-
     public ArrayList<String> exampleStringArrayList = new ArrayList<>(List.of(
             "one",
             "two",
@@ -73,6 +69,10 @@ public class ExampleConfig implements ConfigData {
             "two", 2,
             "three", 3
     ));
+
+    @ConfigEntry.Gui.TransitiveObject
+    //@ConfigEntry.Category("inner")
+    public InnerConfig innerConfig = new InnerConfig();
 
     @Nested
     public static class InnerConfig {

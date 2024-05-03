@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a type to become a nestable configuration class inside a {@link me.shedaniel.autoconfig.ConfigData} type.
+ * Marks a type or a field to become nestable as sub-configs inside a {@link me.shedaniel.autoconfig.ConfigData} instance.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.FIELD, ElementType.TYPE})
 public @interface Nested {
 }

@@ -168,7 +168,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
     }
 
     static boolean isNested(Field field) {
-        return field.getType().isAnnotationPresent(Nested.class);
+        return field.isAnnotationPresent(Nested.class) || field.getType().isAnnotationPresent(Nested.class);
     }
 
     private Object getValue(Field field) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {

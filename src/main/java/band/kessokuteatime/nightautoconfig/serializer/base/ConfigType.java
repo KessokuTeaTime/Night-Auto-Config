@@ -3,7 +3,7 @@ package band.kessokuteatime.nightautoconfig.serializer.base;
 import band.kessokuteatime.nightautoconfig.serializer.NightConfigSerializer;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
-import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.hocon.HoconFormat;
 import com.electronwill.nightconfig.json.JsonFormat;
 import com.electronwill.nightconfig.toml.TomlFormat;
@@ -35,8 +35,14 @@ public enum ConfigType {
         return Utils.getConfigFolder().resolve(getFileName(definition));
     }
 
-    public <T extends ConfigData> NightConfigSerializer<T> serializer(Config definition, Class<T> configClass) {
-        return new NightConfigSerializer<>(definition, configClass, this, FileConfig.builder(getConfigPath(definition)));
+    public NightConfigSerializer.Builder builder() {
+        return new NightConfigSerializer.Builder(this);
+    }
+
+    public <T extends ConfigData> NightConfigSerializer<T> defaultSerializer(Config definition, Class<T> configClass) {
+        return builder()
+                .then(GenericBuilder::preserveInsertionOrder)
+                .build(definition, configClass);
     }
 
     public ConfigFormat<?> format() {

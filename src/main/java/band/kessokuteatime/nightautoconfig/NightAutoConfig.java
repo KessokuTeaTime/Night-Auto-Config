@@ -8,9 +8,6 @@ import me.shedaniel.autoconfig.ConfigHolder;
 import net.fabricmc.api.ClientModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Unsafe;
-
-import java.lang.reflect.Field;
 
 public class NightAutoConfig implements ClientModInitializer {
 	public static final String NAME = "Night Auto Config", ID = "nightautoconfig";
@@ -18,7 +15,7 @@ public class NightAutoConfig implements ClientModInitializer {
 
     @Override
 	public void onInitializeClient() {
-		AutoConfig.register(ExampleConfig.class, ConfigType.TOML::serializer);
+		AutoConfig.register(ExampleConfig.class, ConfigType.HOCON::defaultSerializer);
 		ConfigHolder<ExampleConfig> holder = AutoConfig.getConfigHolder(ExampleConfig.class);
 		ExampleConfig config = holder.getConfig();
     }

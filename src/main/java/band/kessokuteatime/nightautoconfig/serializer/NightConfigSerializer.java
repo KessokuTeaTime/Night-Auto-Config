@@ -3,29 +3,56 @@ package band.kessokuteatime.nightautoconfig.serializer;
 import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import band.kessokuteatime.nightautoconfig.spec.Specs;
+import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.conversion.ConversionTable;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.core.file.FileConfigBuilder;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
 import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.function.UnaryOperator;
 
 public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {
-    protected final Config definition;
+    protected final me.shedaniel.autoconfig.annotation.Config definition;
     protected final Class<T> configClass;
     protected final ConfigType type;
-    protected final GenericBuilder<com.electronwill.nightconfig.core.Config, FileConfig> builder;
+    protected final GenericBuilder<Config, FileConfig> builder;
 
     protected final Specs<T> specs;
     protected final ConversionTable universalConfigConversionTable;
 
-    public NightConfigSerializer(Config definition, Class<T> configClass, ConfigType type, FileConfigBuilder builder) {
+    public record Builder(ConfigType type, UnaryOperator<GenericBuilder<Config, FileConfig>> builder) {
+        public Builder(ConfigType type) {
+            this(type, UnaryOperator.identity());
+        }
+
+        public Builder type(ConfigType type) {
+            return new Builder(type, builder);
+        }
+
+        public Builder builder(UnaryOperator<GenericBuilder<Config, FileConfig>> builder) {
+            return new Builder(type, builder);
+        }
+
+        public Builder then(UnaryOperator<GenericBuilder<Config, FileConfig>> then) {
+            return new Builder(type, b -> then.apply(builder.apply(b)));
+        }
+
+        public <T extends ConfigData> NightConfigSerializer<T> build(
+                me.shedaniel.autoconfig.annotation.Config definition, Class<T> configClass
+        ) {
+            return new NightConfigSerializer<>(definition, configClass, type, builder.apply(FileConfig.builder(type.getConfigPath(definition))));
+        }
+    }
+
+    public NightConfigSerializer(
+            me.shedaniel.autoconfig.annotation.Config definition,
+            Class<T> configClass, ConfigType type, GenericBuilder<Config, FileConfig> builder
+    ) {
         this.definition = definition;
         this.configClass = configClass;
         this.type = type;
@@ -34,7 +61,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         this.specs = new Specs<>(createDefault(), type, type.getFileName(definition));
 
         this.universalConfigConversionTable = new ConversionTable();
-        universalConfigConversionTable.put(com.electronwill.nightconfig.core.Config.class, ConfigType.DEFAULT_SIMPLE::wrap);
+        universalConfigConversionTable.put(Config.class, ConfigType.DEFAULT_SIMPLE::wrap);
     }
 
     @Override
