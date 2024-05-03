@@ -1,5 +1,6 @@
-package band.kessokuteatime.nightautoconfig.serializer.base;
+package band.kessokuteatime.nightautoconfig.serializer;
 
+import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import band.kessokuteatime.nightautoconfig.spec.Specs;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.core.file.FileConfig;

@@ -1,7 +1,6 @@
 package band.kessokuteatime.nightautoconfig.serializer;
 
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
-import band.kessokuteatime.nightautoconfig.serializer.base.NightConfigSerializer;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfigBuilder;
