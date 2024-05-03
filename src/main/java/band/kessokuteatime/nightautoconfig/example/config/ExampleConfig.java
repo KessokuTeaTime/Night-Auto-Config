@@ -68,7 +68,7 @@ public class ExampleConfig implements ConfigData {
     ));
 
     @Conversion(MapToConfigConverter.StringKey.Impl.class)
-    public Map<String, Integer> exampleStringIntHashMap = new TreeMap<>(Map.of(
+    public Map<String, Integer> exampleStringIntMap = new LinkedHashMap<>(Map.of(
             "one", 1,
             "two", 2,
             "three", 3
