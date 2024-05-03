@@ -2,7 +2,6 @@ package band.kessokuteatime.nightautoconfig.example.config;
 
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
-import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
 import band.kessokuteatime.nightautoconfig.converter.MapToConfigConverter;
@@ -44,7 +43,6 @@ public class ExampleConfig implements ConfigData {
     public double exampleDouble = 3.14159;
 
     @Conversion(FloatToDoubleConverter.Impl.class)
-    @SpecInRangeDouble(max = 5)
     public float exampleFloat = 2.71828F;
 
     public boolean exampleBoolean = true;

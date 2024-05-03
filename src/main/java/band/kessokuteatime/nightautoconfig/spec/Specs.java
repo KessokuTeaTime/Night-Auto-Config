@@ -5,10 +5,7 @@ import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.EnumGetMethod;
-import com.electronwill.nightconfig.core.conversion.AdvancedPath;
-import com.electronwill.nightconfig.core.conversion.Path;
-import com.electronwill.nightconfig.core.conversion.SpecEnum;
-import com.electronwill.nightconfig.core.conversion.SpecValidator;
+import com.electronwill.nightconfig.core.conversion.*;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
@@ -295,9 +292,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         // Double
         Arrays.stream(fields)
                 .filter(typeChecker(List.of(Double.class, double.class)))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
+                .filter(field -> field.isAnnotationPresent(SpecDoubleInRange.class))
                 .forEach(field -> {
-                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
+                    SpecDoubleInRange inRangeAnnotation = field.getAnnotation(SpecDoubleInRange.class);
                     try {
                         appendInRangeSpec(spec, field, (double) field.get(t), inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
@@ -308,11 +305,11 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         // Float
         Arrays.stream(fields)
                 .filter(typeChecker(List.of(Float.class, float.class)))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeDouble.class))
+                .filter(field -> field.isAnnotationPresent(SpecFloatInRange.class))
                 .forEach(field -> {
-                    SpecInRangeDouble inRangeAnnotation = field.getAnnotation(SpecInRangeDouble.class);
+                    SpecFloatInRange inRangeAnnotation = field.getAnnotation(SpecFloatInRange.class);
                     try {
-                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), inRangeAnnotation.min(), inRangeAnnotation.max());
+                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), (double) inRangeAnnotation.min(), (double) inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     }
@@ -320,10 +317,10 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
         // Long
         Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeLong.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeLong.class))
+                .filter(typeChecker(List.of(Long.class, long.class)))
+                .filter(field -> field.isAnnotationPresent(SpecLongInRange.class))
                 .forEach(field -> {
-                    SpecInRangeLong inRangeAnnotation = field.getAnnotation(SpecInRangeLong.class);
+                    SpecLongInRange inRangeAnnotation = field.getAnnotation(SpecLongInRange.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
@@ -333,10 +330,10 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
         // Int
         Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeInt.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeInt.class))
+                .filter(typeChecker(List.of(Integer.class, int.class)))
+                .filter(field -> field.isAnnotationPresent(SpecIntInRange.class))
                 .forEach(field -> {
-                    SpecInRangeInt inRangeAnnotation = field.getAnnotation(SpecInRangeInt.class);
+                    SpecIntInRange inRangeAnnotation = field.getAnnotation(SpecIntInRange.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
@@ -344,25 +341,12 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     }
                 });
 
-        // Short
+        // String
         Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeShort.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeShort.class))
+                .filter(typeChecker(List.of(String.class)))
+                .filter(field -> field.isAnnotationPresent(SpecStringInRange.class))
                 .forEach(field -> {
-                    SpecInRangeShort inRangeAnnotation = field.getAnnotation(SpecInRangeShort.class);
-                    try {
-                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-        // Byte
-        Arrays.stream(fields)
-                .filter(typeChecker(SpecInRangeByte.associatedTypes))
-                .filter(field -> field.isAnnotationPresent(SpecInRangeByte.class))
-                .forEach(field -> {
-                    SpecInRangeByte inRangeAnnotation = field.getAnnotation(SpecInRangeByte.class);
+                    SpecStringInRange inRangeAnnotation = field.getAnnotation(SpecStringInRange.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
                     } catch (IllegalAccessException e) {
@@ -412,7 +396,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         }
     }
 
-    private <E> void appendOfClassSpecs(ConfigSpec spec) {
+    private void appendOfClassSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .filter(field -> !field.getType().isEnum()) // Enums are handled separately
                 .filter(field -> field.isAnnotationPresent(SpecOfClass.class))
@@ -442,7 +426,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 }
             } else if (field.isAnnotationPresent(SpecOfClass.class)) {
                 // Restricted by class
-                // Currently cannot be handled by `defineOfClass` due to unknown issues
+                // Currently cannot be handled by `defineOfClass`
                 SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
                 Class<?> ofClass = ofClassAnnotation.value();
                 if (ofClass.isAssignableFrom(field.getType())) {
@@ -462,7 +446,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         }
     }
 
-    private <E extends Enum<E>> void appendEnumSpecs(ConfigSpec spec) {
+    private void appendEnumSpecs(ConfigSpec spec) {
         Arrays.stream(nonNestedFields())
                 .filter(field -> field.getType().isEnum())
                 .forEach(field -> appendEnumSpec(spec, field));
