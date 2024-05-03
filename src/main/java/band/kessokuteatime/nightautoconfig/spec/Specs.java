@@ -8,6 +8,7 @@ import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.AdvancedPath;
 import com.electronwill.nightconfig.core.conversion.Path;
 import com.electronwill.nightconfig.core.conversion.SpecEnum;
+import com.electronwill.nightconfig.core.conversion.SpecValidator;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
@@ -224,9 +225,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
                         final boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
 
-                        if (field.isAnnotationPresent(SpecElementValidator.class)) {
-                            SpecElementValidator elementValidatorAnnotation = field.getAnnotation(SpecElementValidator.class);
-                            Predicate<Object> validator = elementValidatorAnnotation.definition().getDeclaredConstructor().newInstance();
+                        if (field.isAnnotationPresent(SpecValidator.class)) {
+                            SpecValidator validatorAnnotation = field.getAnnotation(SpecValidator.class);
+                            Predicate<Object> validator = validatorAnnotation.value().getDeclaredConstructor().newInstance();
 
                             if (isFloat) {
                                 // Store float as double
