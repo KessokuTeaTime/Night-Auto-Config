@@ -12,7 +12,7 @@ public class MapToConfigConverter implements Converter<Map<?, ?>, Config> {
     public Map<?, ?> convertToField(Config value) {
         Map<?, ?> map = new HashMap<>();
         value.entrySet().forEach(entry -> {
-            map.put(entry.getKey(), entry.getValue());
+            //map.put(entry.getKey(), entry.getValue());
         });
 
         return map;
