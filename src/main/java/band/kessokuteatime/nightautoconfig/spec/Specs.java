@@ -18,34 +18,35 @@ import java.util.stream.Stream;
 
 import static band.kessokuteatime.nightautoconfig.NightAutoConfig.LOGGER;
 
-public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
+public record Specs(Object object, ConfigType type, List<String> nestedPaths) {
     public enum Session {
         SAVING, LOADING;
     }
 
-    public Specs(T t, ConfigType type, String fileName) {
-        this(t, type, Collections.singletonList(fileName));
+    public Specs(Object object, ConfigType type, String fileName) {
+        this(object, type, Collections.singletonList(fileName));
     }
 
     public int correct(Config config, Session session) {
+        /*
         // Process nested configurations
         AtomicInteger nestedCorrections = new AtomicInteger();
         Arrays.stream(nestedFields())
                 .forEach(field -> {
                     try {
                         field.setAccessible(true);
-                        Object value = field.get(t);
+                        Object value = field.get(object);
 
                         List<String> paths = getPath(field);
                         List<String> deeperNestedPaths = Stream.concat(nestedPaths.stream(), paths.stream()).toList();
                         Config nestedConfig = config.get(paths);
 
-                        Specs<Object> nestedSpecs = new Specs<>(value, type, deeperNestedPaths);
+                        Specs nestedSpecs = new Specs(value, type, deeperNestedPaths);
                         if (nestedConfig != null) {
                             // Correct the nested config
                             nestedCorrections.addAndGet(nestedSpecs.correct(nestedConfig, session));
                         } else {
-                            // Correct and fallback to the default config (shouldn't happen)
+                            // Correct and fallback to the default config (shouldn'object happen)
                             Config fallbackConfig = type.wrap(value);
                             nestedSpecs.correct(fallbackConfig, session);
                             config.set(paths, convertValue(field, fallbackConfig));
@@ -71,7 +72,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     if (!config.contains(paths)) {
                         try {
                             field.setAccessible(true);
-                            Object value = field.get(t);
+                            Object value = field.get(object);
 
                             if (value != null) {
                                 config.set(paths, convertValue(field, value));
@@ -128,6 +129,21 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         }
 
         return totalCorrections;
+
+         */
+        ConfigSpec spec = new ConfigSpec();
+        Arrays.stream(fields()).forEach(field -> {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(object);
+
+                List<String> paths = getPath(field);
+                spec.define(paths, value);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return spec.correct(config);
     }
 
     /**
@@ -183,12 +199,13 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
     private Object getValue(Field field) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         field.setAccessible(true);
-        Object value = field.get(t);
+        Object value = field.get(object);
 
         return convertValue(field, value);
     }
 
     private Object convertValue(Field field, Object value) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        /*
         Object converted;
 
         if (field.isAnnotationPresent(Conversion.class)) {
@@ -210,6 +227,9 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         }
 
         return converted;
+
+         */
+        return value;
     }
 
     private String loggerPrefix(Session session) {
@@ -217,7 +237,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
     }
 
     private Field[] fields() {
-        return t.getClass().getDeclaredFields();
+        return object.getClass().getDeclaredFields();
     }
 
     private Field[] nestedFields() {
@@ -237,7 +257,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .forEach(field -> {
                     try {
                         field.setAccessible(true);
-                        Object value = field.get(t);
+                        Object value = field.get(object);
 
                         Config nestedConfig = type.wrap(value);
                         spec.define(getPath(field), convertValue(field, nestedConfig));

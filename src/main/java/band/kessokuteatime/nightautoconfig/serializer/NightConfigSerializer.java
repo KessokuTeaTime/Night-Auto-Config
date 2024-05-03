@@ -1,9 +1,9 @@
 package band.kessokuteatime.nightautoconfig.serializer;
 
-import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import band.kessokuteatime.nightautoconfig.spec.Specs;
 import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.conversion.ConversionTable;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.core.file.FileConfig;
@@ -23,7 +23,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     protected final ConfigType type;
     protected final GenericBuilder<Config, FileConfig> builder;
 
-    protected final Specs<T> specs;
+    protected final ConfigSpec spec;
     protected final ConversionTable universalConfigConversionTable;
 
     public record Builder(ConfigType type, UnaryOperator<GenericBuilder<Config, FileConfig>> builder) {
@@ -59,7 +59,13 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         this.type = type;
         this.builder = builder.preserveInsertionOrder();
 
-        this.specs = new Specs<>(createDefault(), type, type.getFileName(definition));
+        this.spec = new ConfigSpec();
+        Config config = builder.build();
+        new ObjectConverter().toConfig(createDefault(), config);
+
+        for (Config.Entry entry : config.entrySet()) {
+            spec.define(entry.getKey(), entry.getValue());
+        }
 
         this.universalConfigConversionTable = new ConversionTable();
         universalConfigConversionTable.put(Config.class, ConfigType.DEFAULT_SIMPLE::wrap);
@@ -72,7 +78,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             FileConfig config = new ObjectConverter().toConfig(t, builder::build);
 
             //NightAutoConfig.normalize(config);
-            //specs.correct(config, Specs.Session.SAVING);
+            //spec.correct(config);
 
             config.save();
             config.close();
@@ -96,7 +102,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             config.load();
 
             //NightAutoConfig.normalize(config);
-            //specs.correct(config, Specs.Session.LOADING);
+            //spec.correct(config);
 
             return new ObjectConverter().toObject(config, this::createDefault);
         } else {
