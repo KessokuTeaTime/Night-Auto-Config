@@ -10,6 +10,7 @@ import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
 import com.electronwill.nightconfig.core.conversion.Path;
 import com.electronwill.nightconfig.core.conversion.SpecEnum;
+import com.electronwill.nightconfig.core.conversion.SpecFloatInRange;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -42,6 +43,7 @@ public class ExampleConfig implements ConfigData {
 
     public double exampleDouble = 3.14159;
 
+    @SpecFloatInRange(min = 0.0F, max = 10.0F)
     @Conversion(FloatToDoubleConverter.Impl.class)
     public float exampleFloat = 2.71828F;
 
@@ -72,7 +74,7 @@ public class ExampleConfig implements ConfigData {
             "two", 2,
             "three", 3
     ));
-    
+
      */
 
     @Nested
