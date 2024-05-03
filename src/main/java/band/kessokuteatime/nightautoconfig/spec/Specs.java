@@ -171,6 +171,16 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         return field.isAnnotationPresent(Nested.class) || field.getType().isAnnotationPresent(Nested.class);
     }
 
+    private boolean isComplexType(Class<?> type) {
+        return !type.isEnum() && (
+                !this.type.format().supportsType(type)
+                        || type.isAnnotationPresent(Nested.class)
+                        || type.isArray()
+                        || List.class.isAssignableFrom(type)
+                        || Map.class.isAssignableFrom(type)
+        );
+    }
+
     private Object getValue(Field field) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         field.setAccessible(true);
         Object value = field.get(t);
@@ -186,6 +196,10 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
             Converter<Object, Object> converter = (Converter<Object, Object>) conversion.value().getDeclaredConstructor().newInstance();
 
             converted = converter.convertFromField(value);
+        } else if (isComplexType(value.getClass())) {
+            System.out.println(value);
+            converted = ConfigType.DEFAULT_SIMPLE.wrap(value);
+            System.out.println(converted);
         } else {
             converted = value;
         }

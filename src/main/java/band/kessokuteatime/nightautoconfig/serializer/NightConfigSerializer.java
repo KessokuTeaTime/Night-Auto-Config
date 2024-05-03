@@ -71,17 +71,19 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         if (Files.exists(path)) {
             FileConfig config = new ObjectConverter().toConfig(t, builder::build);
 
-            NightAutoConfig.normalize(config);
-            specs.correct(config, Specs.Session.SAVING);
+            //NightAutoConfig.normalize(config);
+            //specs.correct(config, Specs.Session.SAVING);
 
             config.save();
             config.close();
         } else {
-            final boolean succeed = path.toFile().mkdirs();
-            serialize(t);
+            try {
+                Files.createDirectories(path.getParent());
+                Files.createFile(path);
 
-            if (!succeed) {
-                throw new SerializationException(new Exception("Failed to create directory: " + path));
+                serialize(t);
+            } catch (IOException e) {
+                throw new SerializationException(e);
             }
         }
     }
@@ -93,8 +95,8 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             FileConfig config = builder.build();
             config.load();
 
-            NightAutoConfig.normalize(config);
-            specs.correct(config, Specs.Session.LOADING);
+            //NightAutoConfig.normalize(config);
+            //specs.correct(config, Specs.Session.LOADING);
 
             return new ObjectConverter().toObject(config, this::createDefault);
         } else {
