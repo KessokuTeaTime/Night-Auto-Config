@@ -1,9 +1,6 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
-import band.kessokuteatime.nightautoconfig.converter.type.TypeConverter;
-import com.electronwill.nightconfig.core.conversion.Conversion;
-import com.electronwill.nightconfig.core.conversion.Converter;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
