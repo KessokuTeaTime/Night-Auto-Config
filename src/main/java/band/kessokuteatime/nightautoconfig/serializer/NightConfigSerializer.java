@@ -38,7 +38,7 @@ public abstract class NightConfigSerializer<
     @Override
     public void serialize(T t) throws SerializationException {
         if (Files.exists(type.getConfigPath(definition))) {
-            FileConf config = new ObjectConverter(true, false).toConfig(t, builder::build);
+            FileConf config = new ObjectConverter().toConfig(t, builder::build);
 
             specs.correct(config, Specs.Session.SAVING);
             config.save();
@@ -60,7 +60,7 @@ public abstract class NightConfigSerializer<
 
             config.load();
             specs.correct(config, Specs.Session.LOADING);
-            return new ObjectConverter(true, true).toObject(config, this::createDefault);
+            return new ObjectConverter().toObject(config, this::createDefault);
         } else {
             T t = createDefault();
             serialize(t);

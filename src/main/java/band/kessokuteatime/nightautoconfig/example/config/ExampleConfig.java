@@ -5,6 +5,7 @@ import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInRangeDouble;
 import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
 import band.kessokuteatime.nightautoconfig.converter.FloatToDoubleConverter;
+import band.kessokuteatime.nightautoconfig.converter.MapToConfigConverter;
 import band.kessokuteatime.nightautoconfig.spec.InListProvider;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
@@ -66,7 +67,7 @@ public class ExampleConfig implements ConfigData {
             "three"
     ));
 
-    //@Conversion(MapToConfigConverter.class)
+    @Conversion(MapToConfigConverter.StringKey.Impl.class)
     public Map<String, Integer> exampleStringIntHashMap = new HashMap<>(Map.of(
             "one", 1,
             "two", 2,

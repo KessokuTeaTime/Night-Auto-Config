@@ -28,6 +28,28 @@ public interface MapToConfigConverter<K> extends Converter<Map<K, ?>, Config>, S
     }
 
     interface NumberKey<N extends Number> extends MapToConfigConverter<N>, NumberToStringSerializable<N> {
+        interface DoubleKey extends NumberKey<Double>, NumberToStringSerializable.FromDouble {
+            class Impl implements DoubleKey {}
+        }
 
+        interface FloatKey extends NumberKey<Float>, NumberToStringSerializable.FromFloat {
+            class Impl implements FloatKey {}
+        }
+
+        interface LongKey extends NumberKey<Long>, NumberToStringSerializable.FromLong {
+            class Impl implements LongKey {}
+        }
+
+        interface IntKey extends NumberKey<Integer>, NumberToStringSerializable.FromInteger {
+            class Impl implements IntKey {}
+        }
+
+        interface ShortKey extends NumberKey<Short>, NumberToStringSerializable.FromShort {
+            class Impl implements ShortKey {}
+        }
+
+        interface ByteKey extends NumberKey<Byte>, NumberToStringSerializable.FromByte {
+            class Impl implements ByteKey {}
+        }
     }
 }
