@@ -65,12 +65,15 @@ public class ExampleConfig implements ConfigData {
             "three"
     ));
 
+    /*
     @Conversion(MapToConfigConverter.StringKey.Impl.class)
     public Map<String, Integer> exampleStringIntHashMap = new HashMap<>(Map.of(
             "one", 1,
             "two", 2,
             "three", 3
     ));
+    
+     */
 
     @Nested
     public static class InnerConfig {

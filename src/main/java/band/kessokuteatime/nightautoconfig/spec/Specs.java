@@ -10,6 +10,7 @@ import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +51,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                             // Correct and fallback to the default config (shouldn't happen)
                             Config fallbackConfig = type.wrap(value);
                             nestedSpecs.correct(fallbackConfig, session);
-                            config.set(paths, fallbackConfig);
+                            config.set(paths, convertValue(field, fallbackConfig));
 
                             nestedCorrections.addAndGet(fallbackConfig.entrySet().size());
                             LOGGER.warn(
@@ -58,7 +59,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                                     loggerPrefix(session), String.join(".", paths)
                             );
                         }
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -76,7 +77,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                             Object value = field.get(t);
 
                             if (value != null) {
-                                config.set(paths, value);
+                                config.set(paths, convertValue(field, value));
 
                                 enumCorrections.incrementAndGet();
                                 LOGGER.warn(
@@ -89,7 +90,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                                         loggerPrefix(session), String.join(".", paths)
                                 );
                             }
-                        } catch (IllegalAccessException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -173,6 +174,17 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         return field.getType().isAnnotationPresent(Nested.class);
     }
 
+    static Object convertValue(Field field, Object value) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        if (field.isAnnotationPresent(Conversion.class)) {
+            Conversion conversion = field.getAnnotation(Conversion.class);
+            Converter<Object, Object> converter = (Converter<Object, Object>) conversion.value().getDeclaredConstructor().newInstance();
+
+            return converter.convertFromField(value);
+        } else {
+            return value;
+        }
+    }
+
     private String loggerPrefix(Session session) {
         return String.format("(%s)[%s]", session, String.join(" -> ", nestedPaths));
     }
@@ -201,8 +213,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         Object value = field.get(t);
 
                         Config nestedConfig = type.wrap(value);
-                        spec.define(getPath(field), nestedConfig);
-                    } catch (IllegalAccessException e) {
+                        spec.define(getPath(field), convertValue(field, nestedConfig));
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -220,25 +232,13 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         field.setAccessible(true);
                         Object value = field.get(t);
 
-                        final boolean isFloat = List.of(float.class, Float.class).contains(field.getType());
-
                         if (field.isAnnotationPresent(SpecValidator.class)) {
                             SpecValidator validatorAnnotation = field.getAnnotation(SpecValidator.class);
                             Predicate<Object> validator = validatorAnnotation.value().getDeclaredConstructor().newInstance();
 
-                            if (isFloat) {
-                                // Store float as double
-                                spec.define(getPath(field), safeDouble(value), validator);
-                            } else {
-                                spec.define(getPath(field), value, validator);
-                            }
+                            spec.define(getPath(field), convertValue(field, value), validator);
                         } else {
-                            if (isFloat) {
-                                // Store float as double
-                                spec.define(getPath(field), safeDouble(value));
-                            } else {
-                                spec.define(getPath(field), value);
-                            }
+                            spec.define(getPath(field), convertValue(field, value));
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -246,12 +246,12 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 });
     }
 
-    private <V extends Comparable<? super V>> void appendInRangeSpec(
+    private <V extends Comparable<? super V>, E extends Comparable<E>> void appendInRangeSpec(
             ConfigSpec spec, Field field,
             V min, V max
-    ) throws IllegalAccessException {
+    ) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
         field.setAccessible(true);
-        appendInRangeSpec(spec, field, (V) field.get(t), min, max);
+        appendInRangeSpec(spec, field, (E) convertValue(field, field.get(t)), (E) convertValue(field, min), (E) convertValue(field, max));
     }
 
     private <V extends Comparable<? super V>> void appendInRangeSpec(
@@ -261,7 +261,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
         spec.defineInRange(getPath(field), value, min, max);
     }
 
-    private <V extends Comparable<? super V>> void appendInRangeSpec(ConfigSpec spec, Field field) {
+    private <V extends Comparable<? super V>, E extends Comparable<E>> void appendInRangeSpec(ConfigSpec spec, Field field) {
         SpecInRange inRangeAnnotation = field.getAnnotation(SpecInRange.class);
         try {
             field.setAccessible(true);
@@ -269,7 +269,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
             InRangeProvider<?> inRangeProvider = inRangeAnnotation.definition().getDeclaredConstructor().newInstance();
             if (field.getType() == inRangeProvider.min().getClass()) {
-                appendInRangeSpec(spec, field, (V) value, (V) inRangeProvider.min(), (V) inRangeProvider.max());
+                appendInRangeSpec(spec, field, (E) convertValue(field, value), (E) convertValue(field, inRangeProvider.min()), (E) convertValue(field, inRangeProvider.max()));
             } else {
                 LOGGER.error(
                         "Invalid @{} annotation for {}: range values must be of the same type as the field. Ignoring!",
@@ -296,8 +296,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .forEach(field -> {
                     SpecDoubleInRange inRangeAnnotation = field.getAnnotation(SpecDoubleInRange.class);
                     try {
-                        appendInRangeSpec(spec, field, (double) field.get(t), inRangeAnnotation.min(), inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -309,8 +309,8 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 .forEach(field -> {
                     SpecFloatInRange inRangeAnnotation = field.getAnnotation(SpecFloatInRange.class);
                     try {
-                        appendInRangeSpec(spec, field, safeDouble(field.get(t)), (double) inRangeAnnotation.min(), (double) inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
+                        appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -323,7 +323,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     SpecLongInRange inRangeAnnotation = field.getAnnotation(SpecLongInRange.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -336,7 +336,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     SpecIntInRange inRangeAnnotation = field.getAnnotation(SpecIntInRange.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -349,7 +349,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                     SpecStringInRange inRangeAnnotation = field.getAnnotation(SpecStringInRange.class);
                     try {
                         appendInRangeSpec(spec, field, inRangeAnnotation.min(), inRangeAnnotation.max());
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 });
@@ -368,7 +368,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                         InListProvider<?> inListProvider = inListAnnotation.definition().getDeclaredConstructor().newInstance();
                         Collection<?> acceptableValues = inListProvider.acceptableValues();
 
-                        spec.defineInList(getPath(field), value, acceptableValues);
+                        spec.defineInList(getPath(field), convertValue(field, value), acceptableValues);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -384,14 +384,14 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
             Class<?> ofClass = ofClassAnnotation.value();
 
             if (ofClass.isAssignableFrom(field.getType())) {
-                spec.defineOfClass(getPath(field), (E) value, (Class<? super E>) ofClass);
+                spec.defineOfClass(getPath(field), (E) convertValue(field, value), (Class<? super E>) ofClass);
             } else {
                 LOGGER.error(
                         "Invalid @{} annotation for {}: the field type is not a subclass of the specified class (the specified class is not assignable from the field type). Ignoring!",
                         SpecOfClass.class.getSimpleName(), getPath(field)
                 );
             }
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -417,7 +417,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
 
                 if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
                     Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;
-                    spec.defineRestrictedEnum(getPath(field), (E) value, acceptableEnumValues, enumGetMethod);
+                    spec.defineRestrictedEnum(getPath(field), (E) convertValue(field, value), acceptableEnumValues, enumGetMethod);
                 } else {
                     LOGGER.error(
                             "Invalid @{} annotation for {}: acceptable values must be enums of the same type as the field. Ignoring!",
@@ -430,7 +430,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 SpecOfClass ofClassAnnotation = field.getAnnotation(SpecOfClass.class);
                 Class<?> ofClass = ofClassAnnotation.value();
                 if (ofClass.isAssignableFrom(field.getType())) {
-                    spec.defineRestrictedEnum(getPath(field), (E) value, (List<E>) List.of(ofClass.getEnumConstants()), enumGetMethod);
+                    spec.defineRestrictedEnum(getPath(field), (E) convertValue(field, value), (List<E>) List.of(ofClass.getEnumConstants()), enumGetMethod);
                 } else {
                     LOGGER.error(
                             "Invalid @{} annotation for {}: the field type is not a subclass of the specified class (the specified class is not assignable from the field type). Ignoring!",
@@ -439,7 +439,7 @@ public record Specs<T>(T t, ConfigType type, List<String> nestedPaths) {
                 }
             }else {
                 // Unrestricted
-                spec.defineEnum(getPath(field), (E) value, enumGetMethod);
+                spec.defineEnum(getPath(field), (E) convertValue(field, value), enumGetMethod);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
