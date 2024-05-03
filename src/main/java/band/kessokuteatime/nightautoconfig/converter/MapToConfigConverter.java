@@ -2,27 +2,32 @@ package band.kessokuteatime.nightautoconfig.converter;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.conversion.Converter;
-import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapToConfigConverter implements Converter<Map<?, ?>, Config> {
+public interface MapToConfigConverter<K> extends Converter<Map<K, ?>, Config>, StringSerializable<K> {
     @Override
-    public Map<?, ?> convertToField(Config value) {
-        Map<?, ?> map = new HashMap<>();
-        value.entrySet().forEach(entry -> {
-            //map.put(entry.getKey(), entry.getValue());
-        });
+    default Map<K, ?> convertToField(Config value) {
+        Map<K, ?> map = new HashMap<>();
+        value.entrySet().forEach(entry -> map.put(convertFromString(entry.getKey()), entry.getValue()));
 
         return map;
     }
 
     @Override
-    public Config convertFromField(Map<?, ?> value) {
+    default Config convertFromField(Map<K, ?> value) {
         Config config = Config.inMemory();
-        new ObjectConverter().toConfig(value, config);
+        value.forEach((k, v) -> config.set(convertToString(k), v));
 
         return config;
+    }
+
+    interface StringKey extends MapToConfigConverter<String>, StringSerializable.Identity {
+        class Impl implements StringKey {}
+    }
+
+    interface NumberKey<N extends Number> extends MapToConfigConverter<N>, NumberToStringSerializable<N> {
+
     }
 }

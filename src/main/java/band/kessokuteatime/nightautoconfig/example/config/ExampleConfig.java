@@ -42,7 +42,7 @@ public class ExampleConfig implements ConfigData {
 
     public double exampleDouble = 3.14159;
 
-    @Conversion(FloatToDoubleConverter.class)
+    @Conversion(FloatToDoubleConverter.Impl.class)
     @SpecInRangeDouble(max = 5)
     public float exampleFloat = 2.71828F;
 

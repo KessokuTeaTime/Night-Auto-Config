@@ -2,14 +2,16 @@ package band.kessokuteatime.nightautoconfig.converter;
 
 import com.electronwill.nightconfig.core.conversion.Converter;
 
-public class FloatToDoubleConverter implements Converter<Float, Double> {
+public interface FloatToDoubleConverter extends Converter<Float, Double> {
     @Override
-    public Float convertToField(Double value) {
+    default Float convertToField(Double value) {
         return value.floatValue();
     }
 
     @Override
-    public Double convertFromField(Float value) {
+    default Double convertFromField(Float value) {
         return value.doubleValue();
     }
+
+    class Impl implements FloatToDoubleConverter {}
 }
