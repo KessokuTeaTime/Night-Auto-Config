@@ -7,6 +7,7 @@ import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class MapToConfigConverter implements Converter<Map<?, ?>, Config> {
     @Override
     public Map<?, ?> convertToField(Config value) {
