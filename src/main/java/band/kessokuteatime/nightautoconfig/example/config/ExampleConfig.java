@@ -7,7 +7,9 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Config(name = "autoconfig1u_example")
 /*
@@ -55,9 +57,13 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
         public int[] array;
 
+        public Map<String, Integer> map;
+
         public List<ExamplePairOfInts> complexList;
 
         public ExamplePairOfInts[] complexArray;
+
+        public Map<ExamplePairOfInts, ExamplePairOfIntPairs> complexMap;
 
         public ModuleA() {
             this.anEnum = ExampleEnum.FOO;
@@ -66,8 +72,20 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
             this.anObject = new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
             this.list = Arrays.asList(1, 2, 3);
             this.array = new int[]{1, 2, 3};
-            this.complexList = Arrays.asList(new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7));
-            this.complexArray = new ExamplePairOfInts[]{new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)};
+            this.map = new LinkedHashMap<>(Map.of(
+                    "foo", 1,
+                    "bar", 2
+            ));
+            this.complexList = Arrays.asList(
+                    new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
+            );
+            this.complexArray = new ExamplePairOfInts[]{
+                    new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
+            };
+            this.complexMap = new LinkedHashMap<>(Map.of(
+                    new ExamplePairOfInts(0, 1), new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4)),
+                    new ExamplePairOfInts(3, 7), new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4))
+            ));
         }
     }
 
