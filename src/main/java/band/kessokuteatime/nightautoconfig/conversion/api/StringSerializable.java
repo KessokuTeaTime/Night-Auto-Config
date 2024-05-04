@@ -1,10 +1,12 @@
-package band.kessokuteatime.nightautoconfig.converter;
+package band.kessokuteatime.nightautoconfig.conversion.api;
+
+import com.electronwill.nightconfig.core.conversion.Converter;
 
 public interface StringSerializable<T> {
     String convertToString(T value);
     T convertFromString(String value);
 
-    interface Converter<T> extends StringSerializable<T>, com.electronwill.nightconfig.core.conversion.Converter<T, String> {
+    interface WithConverter<T> extends StringSerializable<T>, Converter<T, String> {
         @Override
         default T convertToField(String value) {
             return convertFromString(value);
@@ -30,7 +32,7 @@ public interface StringSerializable<T> {
         class Impl implements Identity {}
     }
 
-    interface IdentityConverter extends Identity, Converter<String> {
-        class Impl implements IdentityConverter {}
+    interface IdentityWithConverter extends Identity, WithConverter<String> {
+        class Impl implements IdentityWithConverter {}
     }
 }

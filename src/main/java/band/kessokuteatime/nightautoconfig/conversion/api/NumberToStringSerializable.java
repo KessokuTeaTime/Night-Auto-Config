@@ -1,4 +1,4 @@
-package band.kessokuteatime.nightautoconfig.converter;
+package band.kessokuteatime.nightautoconfig.conversion.api;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -22,7 +22,7 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
 
     N cast(Number number);
 
-    interface Converter<N extends Number> extends NumberToStringSerializable<N>, StringSerializable.Converter<N> { }
+    interface WithConverter<N extends Number> extends NumberToStringSerializable<N>, StringSerializable.WithConverter<N> { }
 
     interface FromDouble extends NumberToStringSerializable<Double> {
         @Override
@@ -30,8 +30,8 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
             return number.doubleValue();
         }
 
-        interface Converter extends NumberToStringSerializable.Converter<Double>, FromDouble {
-            class Impl implements FromDouble.Converter {}
+        interface WithConverter extends NumberToStringSerializable.WithConverter<Double>, FromDouble {
+            class Impl implements FromDouble.WithConverter {}
         }
 
         class Impl implements FromDouble {}
@@ -43,8 +43,8 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
             return number.floatValue();
         }
 
-        interface Converter extends NumberToStringSerializable.Converter<Float>, FromFloat {
-            class Impl implements FromFloat.Converter {}
+        interface WithConverter extends NumberToStringSerializable.WithConverter<Float>, FromFloat {
+            class Impl implements FromFloat.WithConverter {}
         }
 
         class Impl implements FromFloat {}
@@ -56,8 +56,8 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
             return number.intValue();
         }
 
-        interface Converter extends NumberToStringSerializable.Converter<Integer>, FromInteger {
-            class Impl implements FromInteger.Converter {}
+        interface WithConverter extends NumberToStringSerializable.WithConverter<Integer>, FromInteger {
+            class Impl implements FromInteger.WithConverter {}
         }
 
         class Impl implements FromInteger {}
@@ -69,8 +69,8 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
             return number.longValue();
         }
 
-        interface Converter extends NumberToStringSerializable.Converter<Long>, FromLong {
-            class Impl implements FromLong.Converter {}
+        interface WithConverter extends NumberToStringSerializable.WithConverter<Long>, FromLong {
+            class Impl implements FromLong.WithConverter {}
         }
 
         class Impl implements FromLong {}
@@ -82,8 +82,8 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
             return number.shortValue();
         }
 
-        interface Converter extends NumberToStringSerializable.Converter<Short>, FromShort {
-            class Impl implements FromShort.Converter {}
+        interface WithConverter extends NumberToStringSerializable.WithConverter<Short>, FromShort {
+            class Impl implements FromShort.WithConverter {}
         }
 
         class Impl implements FromShort {}
@@ -95,8 +95,8 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
             return number.byteValue();
         }
 
-        interface Converter extends NumberToStringSerializable.Converter<Byte>, FromByte {
-            class Impl implements FromByte.Converter {}
+        interface WithConverter extends NumberToStringSerializable.WithConverter<Byte>, FromByte {
+            class Impl implements FromByte.WithConverter {}
         }
 
         class Impl implements FromByte {}

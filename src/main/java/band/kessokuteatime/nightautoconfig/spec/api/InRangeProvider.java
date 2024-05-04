@@ -1,4 +1,4 @@
-package band.kessokuteatime.nightautoconfig.spec;
+package band.kessokuteatime.nightautoconfig.spec.api;
 
 import org.jetbrains.annotations.NotNull;
 

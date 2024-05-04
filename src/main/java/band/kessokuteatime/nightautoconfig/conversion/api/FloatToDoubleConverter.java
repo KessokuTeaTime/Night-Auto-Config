@@ -1,4 +1,4 @@
-package band.kessokuteatime.nightautoconfig.converter;
+package band.kessokuteatime.nightautoconfig.conversion.api;
 
 import com.electronwill.nightconfig.core.conversion.Converter;
 

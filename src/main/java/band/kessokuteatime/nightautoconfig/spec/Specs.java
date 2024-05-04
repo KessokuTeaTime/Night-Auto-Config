@@ -2,6 +2,8 @@ package band.kessokuteatime.nightautoconfig.spec;
 
 import band.kessokuteatime.nightautoconfig.annotation.*;
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
+import band.kessokuteatime.nightautoconfig.spec.api.InListProvider;
+import band.kessokuteatime.nightautoconfig.spec.api.InRangeProvider;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigSpec;
 import com.electronwill.nightconfig.core.EnumGetMethod;
@@ -12,9 +14,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static band.kessokuteatime.nightautoconfig.NightAutoConfig.LOGGER;
 

@@ -1,6 +1,6 @@
 package band.kessokuteatime.nightautoconfig.annotation;
 
-import band.kessokuteatime.nightautoconfig.spec.InRangeProvider;
+import band.kessokuteatime.nightautoconfig.spec.api.InRangeProvider;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
