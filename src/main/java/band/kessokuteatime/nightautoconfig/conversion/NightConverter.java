@@ -142,6 +142,11 @@ public class NightConverter {
                 if (value == null) {
                     destination.set(path, null);
                 } else {
+                    if (value.getClass().isArray()) {
+                        // Arrays must be converted to Lists
+                        value = createListFromArray(value);
+                    }
+
                     Class<?> valueType = value.getClass();
                     if (Enum.class.isAssignableFrom(valueType)) {
                         // Enums must not be treated as objects to break down
@@ -232,6 +237,7 @@ public class NightConverter {
 
                 // --- Writes the value to the object's field, converting it if needed ---
                 Class<?> fieldType = field.getType();
+
                 try {
                     if (value instanceof UnmodifiableConfig cfg && !(fieldType.isAssignableFrom(value.getClass()))) {
                         // --- Read as a sub-object ---
@@ -302,7 +308,12 @@ public class NightConverter {
                                 } else {
                                     dst = (Collection<Object>) createInstance(fieldType);
                                 }
-                                field.set(object, dst);
+
+                                if (fieldType.isArray() && dst instanceof List<?> dstList) {
+                                    field.set(object, createArrayFromList(dstList, dstBottomType));
+                                } else {
+                                    field.set(object, dst);
+                                }
                             }
 
                             // Converts the elements of the list
@@ -321,6 +332,24 @@ public class NightConverter {
             }
             clazz = clazz.getSuperclass();
         }
+    }
+
+    private <T> T[] createArrayFromList(Object object, Class<T> clazz) {
+        List<T> list = (List<T>) object;
+        T[] array = (T[]) Array.newInstance(clazz, list.size());
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
+
+    private <T> List<T> createListFromArray(Object array) {
+        int length = Array.getLength(array);
+        List<T> list = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            list.add((T) Array.get(array, i));
+        }
+        return list;
     }
 
     private <E extends Enum<E>> void setEnumField(Field field, Object object, Object value) throws IllegalAccessException {
@@ -354,14 +383,6 @@ public class NightConverter {
             }
         }
         return null;
-    }
-
-    private Class<?> bottomElementType(Type type) {
-        if (type instanceof ParameterizedType genericType) {
-            return bottomElementType(genericType);
-        } else {
-            return (Class<?>)type;
-        }
     }
 
     private void detectElementTypes(ParameterizedType genericType, List<Class<?>> storage) {
