@@ -308,7 +308,7 @@ public record Specs(Object object, ConfigType type, List<String> nestedPaths) {
     private <V extends Comparable<? super V>, E extends Comparable<E>> void appendInRangeSpec(ConfigSpec spec, Field field) {
         SpecInRange inRangeAnnotation = field.getAnnotation(SpecInRange.class);
         try {
-            InRangeProvider<?> inRangeProvider = inRangeAnnotation.definition().getDeclaredConstructor().newInstance();
+            InRangeProvider<?> inRangeProvider = inRangeAnnotation.value().getDeclaredConstructor().newInstance();
             if (field.getType() == inRangeProvider.min().getClass()) {
                 appendInRangeSpec(spec, field, (E) getValue(field), (E) convertValue(field, inRangeProvider.min()), (E) convertValue(field, inRangeProvider.max()));
             } else {
@@ -403,7 +403,7 @@ public record Specs(Object object, ConfigType type, List<String> nestedPaths) {
                 .forEach(field -> {
                     SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
                     try {
-                        InListProvider<?> inListProvider = inListAnnotation.definition().getDeclaredConstructor().newInstance();
+                        InListProvider<?> inListProvider = inListAnnotation.value().getDeclaredConstructor().newInstance();
                         Collection<?> acceptableValues = inListProvider.acceptableValues();
 
                         spec.defineInList(getPath(field), getValue(field), acceptableValues);
@@ -445,7 +445,7 @@ public record Specs(Object object, ConfigType type, List<String> nestedPaths) {
             if (field.isAnnotationPresent(SpecInList.class)) {
                 // Restricted
                 SpecInList inListAnnotation = field.getAnnotation(SpecInList.class);
-                Collection<?> acceptableValues = inListAnnotation.definition().getDeclaredConstructor().newInstance().acceptableValues();
+                Collection<?> acceptableValues = inListAnnotation.value().getDeclaredConstructor().newInstance().acceptableValues();
 
                 if (acceptableValues.stream().allMatch(v -> v.getClass().isEnum() && v.getClass() == field.getType())) {
                     Collection<E> acceptableEnumValues = (Collection<E>) acceptableValues;

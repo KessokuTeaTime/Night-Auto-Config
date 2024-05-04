@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.conversion;
 
+import band.kessokuteatime.nightautoconfig.conversion.api.StringSerializable;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.EnumGetMethod;
@@ -94,7 +95,7 @@ public class NightConverter {
     }
 
     private boolean supportsType(ConfigFormat<?> format, Class<?> type) {
-        return format.supportsType(type) || Map.class.isAssignableFrom(type);
+        return format.supportsType(type);
     }
 
     /**
@@ -151,6 +152,24 @@ public class NightConverter {
                         } else {
                             destination.set(path, value.toString()); // if not supported, serialize it
                         }
+                    } else if (Map.class.isAssignableFrom(valueType)) {
+                        System.out.println("(FROM OBJECT) Map: " + field + " -> " + value);
+                        StringSerializable<Object> keySerializable = AnnotationUtils.getKeySerializable(field);
+
+                        Map<Object, Object> src = (Map<Object, Object>) value;
+                        Config subConfig = destination.createSubConfig();
+                        for (Map.Entry<Object, Object> entry : src.entrySet()) {
+                            String mapKey = keySerializable.convertToString(entry.getKey());
+                            Object mapValue = entry.getValue();
+                            if (!supportsType(format, valueType)) {
+                                Config subSubConfig = subConfig.createSubConfig();
+                                convertToConfig(mapValue, mapValue.getClass(), subSubConfig);
+                                subConfig.set(mapKey, subSubConfig);
+                            } else {
+                                subConfig.set(mapKey, mapValue);
+                            }
+                        }
+                        destination.set(path, subConfig);
                     } else if (field.isAnnotationPresent(ForceBreakdown.class) || !supportsType(format, valueType)) {
                         // We have to convert the value
                         destination.set(path, value);
@@ -167,20 +186,6 @@ public class NightConverter {
                             // List of complex objects => the bottom elements need conversion
                             Collection<Object> dst = new ArrayList<>(src.size());
                             convertObjectsToConfigs(src, bottomType, dst, destination);
-                            destination.set(path, dst);
-                        }
-                    } else if (value instanceof Map<?, ?> src) {
-                        // Checks that the ConfigFormat supports the type of the map's keys and values
-                        Class<?> kType = bottomElementType(src.keySet());
-                        Class<?> vType = bottomElementType(src.values());
-                        if (supportsType(format, kType) && supportsType(format, vType)) {
-                            // Everything is supported, no conversion needed
-                            destination.set(path, value);
-                        } else {
-                            // Map of complex objects => the bottom elements need conversion
-                            Map<Object, Object> dst = new HashMap<>(src.size());
-                            convertObjectsToConfigs(src.keySet(), kType, dst.keySet(), destination);
-                            convertObjectsToConfigs(src.values(), vType, dst.values(), destination);
                             destination.set(path, dst);
                         }
                     }else {
@@ -236,25 +241,32 @@ public class NightConverter {
 
                         if (Map.class.isAssignableFrom(fieldType)) {
                             // --- Reads as a map, maybe a map of objects with conversion ---
-                            final Class<?> srcVType = bottomElementType(cfg.valueMap().values());
+                            StringSerializable<Object> keySerializable = AnnotationUtils.getKeySerializable(field);
 
-                            final ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-                            final Class<?> dstKType = bottomElementType(genericType.getActualTypeArguments()[0]);
-                            final Class<?> dstVType = bottomElementType(genericType.getActualTypeArguments()[1]);
-
-                            // Map of objects => the bottom elements need conversion
-
-                            // Uses the current field value if there is one, or create a new map
-                            Map<?, ?> dst = (Map<?, ?>) field.get(object);
+                            Map<String, ?> src = cfg.valueMap();
+                            Map<Object, Object> dst = (Map<Object, Object>) field.get(object);
                             if (dst == null) {
                                 if (fieldType == HashMap.class
                                         || fieldType.isInterface()
                                         || Modifier.isAbstract(fieldType.getModifiers())) {
-                                    dst = new HashMap<>(cfg.valueMap().size()); // allocates the right size
+                                    dst = new HashMap<>(src.size()); // allocates the right size
                                 } else {
-                                    dst = (Map<?, ?>) createInstance(fieldType);
+                                    dst = (Map<Object, Object>) createInstance(fieldType);
                                 }
                                 field.set(object, dst);
+                            }
+                            System.out.println("(TO OBJECT) Map: " + field + " -> " + dst);
+
+                            for (Map.Entry<String, ?> entry : src.entrySet()) {
+                                Object mapKey = keySerializable.convertFromString(entry.getKey());
+                                Object mapValue = entry.getValue();
+                                if (mapValue instanceof UnmodifiableConfig subCfg) {
+                                    Object subObj = createInstance(field.getType().getComponentType());
+                                    convertToObject(subCfg, subObj, field.getType().getComponentType());
+                                    dst.put(mapKey, subObj);
+                                } else {
+                                    dst.put(mapKey, mapValue);
+                                }
                             }
                         } else {
                             // Gets or creates the field and convert it (if null OR not preserved)
@@ -264,7 +276,6 @@ public class NightConverter {
                                 field.set(object, fieldValue);
                                 convertToObject(cfg, fieldValue, field.getType());
                             } else if (!AnnotationUtils.mustPreserve(field, clazz)) {
-                                System.out.println("Current: " + field);
                                 convertToObject(cfg, fieldValue, field.getType());
                             }
                         }

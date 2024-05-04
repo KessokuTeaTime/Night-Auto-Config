@@ -22,83 +22,45 @@ public interface NumberToStringSerializable<N extends Number> extends StringSeri
 
     N cast(Number number);
 
-    interface WithConverter<N extends Number> extends NumberToStringSerializable<N>, StringSerializable.WithConverter<N> { }
-
-    interface FromDouble extends NumberToStringSerializable<Double> {
+    class FromDouble implements NumberToStringSerializable<Double> {
         @Override
-        default Double cast(Number number) {
+        public Double cast(Number number) {
             return number.doubleValue();
         }
-
-        interface WithConverter extends NumberToStringSerializable.WithConverter<Double>, FromDouble {
-            class Impl implements FromDouble.WithConverter {}
-        }
-
-        class Impl implements FromDouble {}
     }
 
-    interface FromFloat extends NumberToStringSerializable<Float> {
+    class FromFloat implements NumberToStringSerializable<Float> {
         @Override
-        default Float cast(Number number) {
+        public Float cast(Number number) {
             return number.floatValue();
         }
-
-        interface WithConverter extends NumberToStringSerializable.WithConverter<Float>, FromFloat {
-            class Impl implements FromFloat.WithConverter {}
-        }
-
-        class Impl implements FromFloat {}
     }
 
-    interface FromInteger extends NumberToStringSerializable<Integer> {
+    class FromInteger implements NumberToStringSerializable<Integer> {
         @Override
-        default Integer cast(Number number) {
+        public Integer cast(Number number) {
             return number.intValue();
         }
-
-        interface WithConverter extends NumberToStringSerializable.WithConverter<Integer>, FromInteger {
-            class Impl implements FromInteger.WithConverter {}
-        }
-
-        class Impl implements FromInteger {}
     }
 
-    interface FromLong extends NumberToStringSerializable<Long> {
+    class FromLong implements NumberToStringSerializable<Long> {
         @Override
-        default Long cast(Number number) {
+        public Long cast(Number number) {
             return number.longValue();
         }
-
-        interface WithConverter extends NumberToStringSerializable.WithConverter<Long>, FromLong {
-            class Impl implements FromLong.WithConverter {}
-        }
-
-        class Impl implements FromLong {}
     }
 
-    interface FromShort extends NumberToStringSerializable<Short> {
+    class FromShort implements NumberToStringSerializable<Short> {
         @Override
-        default Short cast(Number number) {
+        public Short cast(Number number) {
             return number.shortValue();
         }
-
-        interface WithConverter extends NumberToStringSerializable.WithConverter<Short>, FromShort {
-            class Impl implements FromShort.WithConverter {}
-        }
-
-        class Impl implements FromShort {}
     }
 
-    interface FromByte extends NumberToStringSerializable<Byte> {
+    class FromByte implements NumberToStringSerializable<Byte> {
         @Override
-        default Byte cast(Number number) {
+        public Byte cast(Number number) {
             return number.byteValue();
         }
-
-        interface WithConverter extends NumberToStringSerializable.WithConverter<Byte>, FromByte {
-            class Impl implements FromByte.WithConverter {}
-        }
-
-        class Impl implements FromByte {}
     }
 }

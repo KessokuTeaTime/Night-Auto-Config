@@ -6,33 +6,27 @@ public interface StringSerializable<T> {
     String convertToString(T value);
     T convertFromString(String value);
 
-    interface WithConverter<T> extends StringSerializable<T>, Converter<T, String> {
+    class Identity implements StringSerializable<String> {
         @Override
-        default T convertToField(String value) {
-            return convertFromString(value);
-        }
-
-        @Override
-        default String convertFromField(T value) {
-            return convertToString(value);
-        }
-    }
-
-    interface Identity extends StringSerializable<String> {
-        @Override
-        default String convertToString(String value) {
+        public String convertToString(String value) {
             return value;
         }
 
         @Override
-        default String convertFromString(String value) {
+        public String convertFromString(String value) {
             return value;
         }
-
-        class Impl implements Identity {}
     }
 
-    interface IdentityWithConverter extends Identity, WithConverter<String> {
-        class Impl implements IdentityWithConverter {}
+    class ObjectIdentity implements StringSerializable<Object> {
+        @Override
+        public String convertToString(Object value) {
+            return value.toString();
+        }
+
+        @Override
+        public Object convertFromString(String value) {
+            return value;
+        }
     }
 }

@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface SpecInList {
-    Class<? extends InListProvider<?>> definition();
+    Class<? extends InListProvider<?>> value();
 }

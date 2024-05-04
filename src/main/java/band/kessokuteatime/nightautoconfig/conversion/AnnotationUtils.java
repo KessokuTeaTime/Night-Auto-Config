@@ -3,7 +3,9 @@ package band.kessokuteatime.nightautoconfig.conversion;
 import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.annotation.GlobalConversion;
 import band.kessokuteatime.nightautoconfig.annotation.GlobalConversions;
+import band.kessokuteatime.nightautoconfig.annotation.KeySerializable;
 import band.kessokuteatime.nightautoconfig.annotation.TypeConversion;
+import band.kessokuteatime.nightautoconfig.conversion.api.StringSerializable;
 import com.electronwill.nightconfig.core.conversion.*;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
@@ -112,6 +114,21 @@ public final class AnnotationUtils {
         }
 
         return Optional.empty();
+    }
+
+    public static StringSerializable<Object> getKeySerializable(Field field) {
+        if (field.isAnnotationPresent(KeySerializable.class)) {
+            KeySerializable keySerializable = field.getAnnotation(KeySerializable.class);
+            try {
+                var constructor = keySerializable.value().getDeclaredConstructor();
+                constructor.setAccessible(true);
+
+                return (StringSerializable<Object>) constructor.newInstance();
+            } catch (ReflectiveOperationException ex) {
+                throw new ReflectionException("Cannot create a key serializer for field " + field, ex);
+            }
+        }
+        return new StringSerializable.ObjectIdentity();
     }
 
     public static List<String> getPath(Field field) {

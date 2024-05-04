@@ -1,6 +1,8 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
+import band.kessokuteatime.nightautoconfig.annotation.KeySerializable;
 import band.kessokuteatime.nightautoconfig.annotation.Nested;
+import band.kessokuteatime.nightautoconfig.conversion.api.StringSerializable;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -10,6 +12,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Config(name = "autoconfig1u_example")
 /*
@@ -63,6 +67,7 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
         public ExamplePairOfInts[] complexArray;
 
+        @KeySerializable(ExamplePairOfIntsSerializable.class)
         public Map<ExamplePairOfInts, ExamplePairOfIntPairs> complexMap;
 
         public ModuleA() {
@@ -76,6 +81,7 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
                     "foo", 1,
                     "bar", 2
             ));
+
             this.complexList = Arrays.asList(
                     new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
             );
@@ -146,5 +152,23 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
     public enum ExampleEnum {
         FOO, BAR, BAZ
+    }
+
+    public static class ExamplePairOfIntsSerializable implements StringSerializable<ExamplePairOfInts> {
+        @Override
+        public String convertToString(ExamplePairOfInts value) {
+            return String.format("<%d, %d>", value.foo, value.bar);
+        }
+
+        @Override
+        public ExamplePairOfInts convertFromString(String value) {
+            Pattern pattern = Pattern.compile("\\s*<\\s*(\\d+)\\s*,\\s*(\\d+)\\s*>\\s*");
+            Matcher matcher = pattern.matcher(value);
+            if (matcher.matches()) {
+                return new ExamplePairOfInts(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
+            } else {
+                throw new IllegalArgumentException("Invalid format: " + value);
+            }
+        }
     }
 }

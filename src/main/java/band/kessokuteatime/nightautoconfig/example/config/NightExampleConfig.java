@@ -4,7 +4,6 @@ import band.kessokuteatime.nightautoconfig.annotation.Nested;
 import band.kessokuteatime.nightautoconfig.annotation.SpecInList;
 import band.kessokuteatime.nightautoconfig.annotation.SpecOfClass;
 import band.kessokuteatime.nightautoconfig.conversion.api.FloatToDoubleConverter;
-import band.kessokuteatime.nightautoconfig.conversion.api.MapToConfigConverter;
 import band.kessokuteatime.nightautoconfig.spec.api.InListProvider;
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import com.electronwill.nightconfig.core.conversion.Conversion;
@@ -70,7 +69,6 @@ public class NightExampleConfig implements ConfigData {
             "three"
     ));
 
-    //@Conversion(MapToConfigConverter.StringKey.Impl.class)
     public Map<String, Integer> exampleStringIntMap = new LinkedHashMap<>(Map.of(
             "one", 1,
             "two", 2,
@@ -87,14 +85,14 @@ public class NightExampleConfig implements ConfigData {
 
         public String innerString = "S.T.A.Y.";
 
-        @SpecInList(definition = ExampleStringInListProvider.class)
+        @SpecInList(value = ExampleStringInListProvider.class)
         public String restrictedString = "case 1";
 
         @SpecOfClass(ExampleEnum.class)
         public ExampleEnum innerEnum = ExampleEnum.SECOND;
 
         @SpecEnum(method = EnumGetMethod.ORDINAL_OR_NAME)
-        @SpecInList(definition = ExampleEnumInListProvider.class)
+        @SpecInList(value = ExampleEnumInListProvider.class)
         public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
     }
 }
