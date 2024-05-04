@@ -161,7 +161,7 @@ public class NightConverter {
                         for (Map.Entry<Object, Object> entry : src.entrySet()) {
                             String mapKey = keySerializable.convertToString(entry.getKey());
                             Object mapValue = entry.getValue();
-                            if (!supportsType(format, valueType)) {
+                            if (!supportsType(format, mapValue.getClass())) {
                                 Config subSubConfig = subConfig.createSubConfig();
                                 convertToConfig(mapValue, mapValue.getClass(), subSubConfig);
                                 subConfig.set(mapKey, subSubConfig);
