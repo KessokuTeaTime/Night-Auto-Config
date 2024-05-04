@@ -142,11 +142,6 @@ public class NightConverter {
                 if (value == null) {
                     destination.set(path, null);
                 } else {
-                    if (value.getClass().isArray()) {
-                        // Arrays must be converted to Lists
-                        value = createListFromArray(value);
-                    }
-
                     Class<?> valueType = value.getClass();
                     if (Enum.class.isAssignableFrom(valueType)) {
                         // Enums must not be treated as objects to break down
@@ -309,18 +304,15 @@ public class NightConverter {
                                     dst = (Collection<Object>) createInstance(fieldType);
                                 }
 
-                                if (fieldType.isArray() && dst instanceof List<?> dstList) {
-                                    field.set(object, createArrayFromList(dstList, dstBottomType));
-                                } else {
-                                    field.set(object, dst);
-                                }
+                                field.set(object, dst);
                             }
 
                             // Converts the elements of the list
+                            System.out.println(field);
                             convertConfigsToObject(src, dst, dstTypes, 0);
                         }
                     } else {
-                        if (field.getType().isEnum()) {
+                        if (fieldType.isEnum()) {
                             setEnumField(field, object, value);
                         } else {
                             field.set(object, value);
@@ -334,11 +326,11 @@ public class NightConverter {
         }
     }
 
-    private <T> T[] createArrayFromList(Object object, Class<T> clazz) {
-        List<T> list = (List<T>) object;
-        T[] array = (T[]) Array.newInstance(clazz, list.size());
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = list.get(i);
+    private <T> Object createArrayFromList(Object list, Object array) {
+        List<T> converted = (List<T>) list;
+        System.out.println(array);
+        for (int i = 0; i < converted.size(); i++) {
+            Array.set(array, i, converted.get(i));
         }
         return array;
     }

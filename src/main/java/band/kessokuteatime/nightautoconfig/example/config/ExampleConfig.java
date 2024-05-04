@@ -8,10 +8,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,16 +72,16 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
             this.anEnumWithButton = ExampleEnum.FOO;
             this.aString = "hello";
             this.anObject = new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
-            this.list = Arrays.asList(1, 2, 3);
+            this.list = new ArrayList(List.of(1, 2, 3));
             this.array = new int[]{1, 2, 3};
             this.map = new LinkedHashMap<>(Map.of(
                     "foo", 1,
                     "bar", 2
             ));
 
-            this.complexList = Arrays.asList(
+            this.complexList = new ArrayList<>(List.of(
                     new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
-            );
+            ));
             this.complexArray = new ExamplePairOfInts[]{
                     new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
             };
