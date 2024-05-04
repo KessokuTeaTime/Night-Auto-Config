@@ -14,24 +14,16 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class NightAutoConfig implements ClientModInitializer {
 	public static final String NAME = "Night Auto Config", ID = "nightautoconfig";
 	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
 
-    public static final Map<Class<?>, Class<? extends Converter<?, ?>>> DEFAULT_CONVERTERS = Map.of(
-            Float.class, FloatToDoubleConverter.Impl.class,
-            float.class, FloatToDoubleConverter.Impl.class,
-
-            //Integer.class, NumberToLongConverter.FromInt.Impl.class,
-            //int.class, NumberToLongConverter.FromInt.Impl.class,
-
-            Short.class, NumberToLongConverter.FromShort.Impl.class,
-            short.class, NumberToLongConverter.FromShort.Impl.class,
-
-            Byte.class, NumberToLongConverter.FromByte.Impl.class,
-            byte.class, NumberToLongConverter.FromByte.Impl.class
+    public static final Map<Predicate<Class<?>>, Class<? extends Converter<?, ?>>> DEFAULT_CONVERTERS = Map.of(
+            c -> List.of(Float.class, float.class).contains(c), FloatToDoubleConverter.Impl.class
     );
 
     @Override

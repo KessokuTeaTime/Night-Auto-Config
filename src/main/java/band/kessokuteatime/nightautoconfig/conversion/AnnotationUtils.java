@@ -9,10 +9,8 @@ import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
 public final class AnnotationUtils {
     /**
@@ -38,7 +36,10 @@ public final class AnnotationUtils {
     }
 
     public static Optional<Converter<Object, Object>> getDefaultConverter(Class<?> type) {
-        return Optional.ofNullable(NightAutoConfig.DEFAULT_CONVERTERS.getOrDefault(type, null))
+        return NightAutoConfig.DEFAULT_CONVERTERS.entrySet().stream()
+                .filter(entry -> entry.getKey().test(type))
+                .map(Map.Entry::getValue)
+                .findFirst()
                 .map(converterClass -> {
                     try {
                         return (Converter<Object, Object>) converterClass.newInstance();
@@ -79,30 +80,34 @@ public final class AnnotationUtils {
     }
 
     public static Optional<Converter<Object, Object>> getGlobalConverter(Object object, Class<?> type) {
-        GlobalConversion globalConversion = null;
+        List<GlobalConversion> globalConversionList = List.of();
         if (object.getClass().isAnnotationPresent(GlobalConversions.class)) {
             GlobalConversions globalConversions = object.getClass().getAnnotation(GlobalConversions.class);
-
-            // Find the most specific global converter for the type
-            globalConversion = Arrays.stream(globalConversions.value())
-                   .filter(gc -> gc.target() == type)
-                   .findFirst()
-                   .orElse(globalConversion);
+            globalConversionList = List.of(globalConversions.value());
         } else if (object.getClass().isAnnotationPresent(GlobalConversion.class)) {
-            GlobalConversion gc = object.getClass().getAnnotation(GlobalConversion.class);
-            if (gc.target() == type) {
-                globalConversion = gc;
-            }
+            globalConversionList = Collections.singletonList(object.getClass().getAnnotation(GlobalConversion.class));
         }
 
-        if (globalConversion != null) {
-            try {
-                var constructor = globalConversion.value().getDeclaredConstructor();
-                constructor.setAccessible(true);
+        if (!globalConversionList.isEmpty()) {
+            for (GlobalConversion globalConversion : globalConversionList) {
+                try {
+                    var predicateConstructor = globalConversion.target().getDeclaredConstructor();
+                    predicateConstructor.setAccessible(true);
+                    var predicate = (Predicate<Class<?>>) predicateConstructor.newInstance();
 
-                return Optional.of((Converter<Object, Object>) constructor.newInstance());
-            } catch (ReflectiveOperationException ex) {
-                throw new ReflectionException("Cannot create a converter for type " + type, ex);
+                    if (predicate.test(type)) {
+                        try {
+                            var constructor = globalConversion.value().getDeclaredConstructor();
+                            constructor.setAccessible(true);
+
+                            return Optional.of((Converter<Object, Object>) constructor.newInstance());
+                        } catch (ReflectiveOperationException ex) {
+                            throw new ReflectionException("Cannot create a converter for type " + type, ex);
+                        }
+                    }
+                } catch (ReflectiveOperationException ex) {
+                    throw new ReflectionException("Cannot create a converter for type " + type, ex);
+                }
             }
         }
 
