@@ -120,7 +120,6 @@ public class NightConverter {
                     continue;
                 }
 
-                System.out.println(field);
                 field.setAccessible(true);
 
                 // --- Applies annotations ---
@@ -153,7 +152,6 @@ public class NightConverter {
                             destination.set(path, value.toString()); // if not supported, serialize it
                         }
                     } else if (Map.class.isAssignableFrom(valueType)) {
-                        System.out.println("(FROM OBJECT) Map: " + field + " -> " + value);
                         StringSerializable<Object> keySerializable = AnnotationUtils.getKeySerializable(field);
 
                         Map<Object, Object> src = (Map<Object, Object>) value;
@@ -203,7 +201,6 @@ public class NightConverter {
      * settings apply.
      */
     private void convertToObject(UnmodifiableConfig config, Object object, Class<?> clazz) {
-        System.out.println(object + ", " + clazz);
         // This loop walks through the class hierarchy, see clazz = clazz.getSuperclass(); at the end
         while (clazz != Object.class) {
             for (Field field : clazz.getDeclaredFields()) {
@@ -255,7 +252,6 @@ public class NightConverter {
                                 }
                                 field.set(object, dst);
                             }
-                            System.out.println("(TO OBJECT) Map: " + field + " -> " + dst);
 
                             for (Map.Entry<String, ?> entry : src.entrySet()) {
                                 Object mapKey = keySerializable.convertFromString(entry.getKey());
