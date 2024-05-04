@@ -19,7 +19,7 @@ public class NightConverter {
     }
 
     public NightConverter() {
-        this(false, true);
+        this(true, true);
     }
 
     public void toConfig(Object o, Config destination) {
@@ -93,6 +93,10 @@ public class NightConverter {
         return destination;
     }
 
+    private boolean supportsType(ConfigFormat<?> format, Class<?> type) {
+        return format.supportsType(type) || Map.class.isAssignableFrom(type);
+    }
+
     /**
      * Converts an Object to a Config. The {@link #bypassTransient} setting applies.
      */
@@ -107,10 +111,15 @@ public class NightConverter {
                     continue;
                 }
 
-                if (!bypassTransient && Modifier.isTransient(fieldModifiers)) {
+                if (bypassFinal && Modifier.isFinal(fieldModifiers)) {
                     continue;
                 }
 
+                if (bypassTransient && Modifier.isTransient(fieldModifiers)) {
+                    continue;
+                }
+
+                System.out.println(field);
                 field.setAccessible(true);
 
                 // --- Applies annotations ---
@@ -121,7 +130,7 @@ public class NightConverter {
                     throw new ReflectionException("Unable to parse the field " + field, e);
                 }
 
-                Optional<Converter<Object, Object>> converter = AnnotationUtils.getConverter(field);
+                Optional<Converter<Object, Object>> converter = AnnotationUtils.getConverter(object, field);
                 if (converter.isPresent()) {
                     value = converter.get().convertFromField(value);
                 }
@@ -142,7 +151,7 @@ public class NightConverter {
                         } else {
                             destination.set(path, value.toString()); // if not supported, serialize it
                         }
-                    } else if (field.isAnnotationPresent(ForceBreakdown.class) || !format.supportsType(valueType)) {
+                    } else if (field.isAnnotationPresent(ForceBreakdown.class) || !supportsType(format, valueType)) {
                         // We have to convert the value
                         destination.set(path, value);
                         Config converted = destination.createSubConfig();
@@ -151,7 +160,7 @@ public class NightConverter {
                     } else if (value instanceof Collection<?> src) {
                         // Checks that the ConfigFormat supports the type of the collection's elements
                         Class<?> bottomType = bottomElementType(src);
-                        if (format.supportsType(bottomType)) {
+                        if (supportsType(format, bottomType)) {
                             // Everything is supported, no conversion needed
                             destination.set(path, value);
                         } else {
@@ -160,7 +169,21 @@ public class NightConverter {
                             convertObjectsToConfigs(src, bottomType, dst, destination);
                             destination.set(path, dst);
                         }
-                    } else {
+                    } else if (value instanceof Map<?, ?> src) {
+                        // Checks that the ConfigFormat supports the type of the map's keys and values
+                        Class<?> kType = bottomElementType(src.keySet());
+                        Class<?> vType = bottomElementType(src.values());
+                        if (supportsType(format, kType) && supportsType(format, vType)) {
+                            // Everything is supported, no conversion needed
+                            destination.set(path, value);
+                        } else {
+                            // Map of complex objects => the bottom elements need conversion
+                            Map<Object, Object> dst = new HashMap<>(src.size());
+                            convertObjectsToConfigs(src.keySet(), kType, dst.keySet(), destination);
+                            convertObjectsToConfigs(src.values(), vType, dst.values(), destination);
+                            destination.set(path, dst);
+                        }
+                    }else {
                         // Simple value
                         destination.set(path, value);
                     }
@@ -175,6 +198,7 @@ public class NightConverter {
      * settings apply.
      */
     private void convertToObject(UnmodifiableConfig config, Object object, Class<?> clazz) {
+        System.out.println(object + ", " + clazz);
         // This loop walks through the class hierarchy, see clazz = clazz.getSuperclass(); at the end
         while (clazz != Object.class) {
             for (Field field : clazz.getDeclaredFields()) {
@@ -185,11 +209,11 @@ public class NightConverter {
                     continue;
                 }
 
-                if (!bypassFinal && Modifier.isFinal(fieldModifiers)) {
+                if (bypassFinal && Modifier.isFinal(fieldModifiers)) {
                     continue;
                 }
 
-                if (!bypassTransient && Modifier.isTransient(fieldModifiers)) {
+                if (bypassTransient && Modifier.isTransient(fieldModifiers)) {
                     continue;
                 }
 
@@ -199,7 +223,7 @@ public class NightConverter {
                 List<String> path = AnnotationUtils.getPath(field);
                 Object value = config.get(path);
 
-                Optional<Converter<Object, Object>> converter = AnnotationUtils.getConverter(field);
+                Optional<Converter<Object, Object>> converter = AnnotationUtils.getConverter(object, field);
                 if (converter.isPresent()) {
                     value = converter.get().convertToField(value);
                 }
@@ -210,23 +234,50 @@ public class NightConverter {
                     if (value instanceof UnmodifiableConfig cfg && !(fieldType.isAssignableFrom(value.getClass()))) {
                         // --- Read as a sub-object ---
 
-                        // Gets or creates the field and convert it (if null OR not preserved)
-                        Object fieldValue = field.get(object);
-                        if (fieldValue == null) {
-                            fieldValue = createInstance(fieldType);
-                            field.set(object, fieldValue);
-                            convertToObject(cfg, fieldValue, field.getType());
-                        } else if (!AnnotationUtils.mustPreserve(field, clazz)) {
-                            convertToObject(cfg, fieldValue, field.getType());
-                        }
+                        if (Map.class.isAssignableFrom(fieldType)) {
+                            // --- Reads as a map, maybe a map of objects with conversion ---
+                            final Class<?> srcVType = bottomElementType(cfg.valueMap().values());
 
+                            final ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+                            final Class<?> dstKType = bottomElementType(genericType.getActualTypeArguments()[0]);
+                            final Class<?> dstVType = bottomElementType(genericType.getActualTypeArguments()[1]);
+
+                            // Map of objects => the bottom elements need conversion
+
+                            // Uses the current field value if there is one, or create a new map
+                            Map<Object, Object> dst = (Map<Object, Object>) field.get(object);
+                            if (dst == null) {
+                                if (fieldType == HashMap.class
+                                        || fieldType.isInterface()
+                                        || Modifier.isAbstract(fieldType.getModifiers())) {
+                                    dst = new HashMap<>(cfg.valueMap().size()); // allocates the right size
+                                } else {
+                                    dst = (Map<Object, Object>) createInstance(fieldType);
+                                }
+                                field.set(object, dst);
+                            }
+
+                            // Converts the keys and values of the map
+                            convertConfigsToObject(cfg.valueMap(), dst, (Class<Map<?, ?>>) fieldType);
+                        } else {
+                            // Gets or creates the field and convert it (if null OR not preserved)
+                            Object fieldValue = field.get(object);
+                            if (fieldValue == null) {
+                                fieldValue = createInstance(fieldType);
+                                field.set(object, fieldValue);
+                                convertToObject(cfg, fieldValue, field.getType());
+                            } else if (!AnnotationUtils.mustPreserve(field, clazz)) {
+                                System.out.println("Current: " + field);
+                                convertToObject(cfg, fieldValue, field.getType());
+                            }
+                        }
                     } else if (value instanceof Collection<?> src && Collection.class.isAssignableFrom(fieldType)) {
                         // --- Reads as a collection, maybe a list of objects with conversion ---
                         final Class<?> srcBottomType = bottomElementType(src);
 
-                        final ParameterizedType genericType = (ParameterizedType)field.getGenericType();
+                        final ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                         final List<Class<?>> dstTypes = elementTypes(genericType);
-                        final Class<?> dstBottomType = dstTypes.get(dstTypes.size()-1);
+                        final Class<?> dstBottomType = dstTypes.get(dstTypes.size() - 1);
 
                         if (srcBottomType == null
                                 || dstBottomType == null
@@ -234,7 +285,6 @@ public class NightConverter {
 
                             // Simple list, no conversion needed
                             field.set(object, value);
-
                         } else {
                             // List of objects => the bottom elements need conversion
 
@@ -288,7 +338,7 @@ public class NightConverter {
         if (genericType != null && genericType.getActualTypeArguments().length > 0) {
             Type parameter = genericType.getActualTypeArguments()[0];
             if (parameter instanceof ParameterizedType genericParameter) {
-                Class<?> paramClass = (Class<?>)genericParameter.getRawType();
+                Class<?> paramClass = (Class<?>) genericParameter.getRawType();
                 if (paramClass.isAssignableFrom(Collection.class)) {
                     return bottomElementType(genericParameter);
                 } else {
@@ -302,11 +352,19 @@ public class NightConverter {
         return null;
     }
 
+    private Class<?> bottomElementType(Type type) {
+        if (type instanceof ParameterizedType genericType) {
+            return bottomElementType(genericType);
+        } else {
+            return (Class<?>)type;
+        }
+    }
+
     private void detectElementTypes(ParameterizedType genericType, List<Class<?>> storage) {
         if (genericType != null && genericType.getActualTypeArguments().length > 0) {
             Type parameter = genericType.getActualTypeArguments()[0];
             if (parameter instanceof ParameterizedType genericParameter) {
-                Class<?> paramClass = (Class<?>)genericParameter.getRawType();
+                Class<?> paramClass = (Class<?>) genericParameter.getRawType();
 
                 storage.add(paramClass);
                 if (Collection.class.isAssignableFrom(paramClass)) {
@@ -341,11 +399,11 @@ public class NightConverter {
      * @return the type of the elements of the most nested list
      */
     private Class<?> bottomElementType(Collection<?> list) {
-        for (Object elem : list) {
-            if (elem instanceof Collection) {
-                return bottomElementType((Collection<?>)elem);
-            } else if (elem != null) {
-                return elem.getClass();
+        for (Object element : list) {
+            if (element instanceof Collection) {
+                return bottomElementType((Collection<?>)element);
+            } else if (element != null) {
+                return element.getClass();
             }
         }
         return null;
@@ -364,10 +422,10 @@ public class NightConverter {
             int currentLevel
     ) {
         final Class<?> currentType = dstElementTypes.get(currentLevel);
-        for (Object elem : src) {
-            if (elem == null) {
+        for (Object element : src) {
+            if (element == null) {
                 dst.add(null);
-            } else if (elem instanceof Collection<?> subSrc) {
+            } else if (element instanceof Collection<?> subSrc) {
                 final Collection<Object> subDst;
 
                 if (currentType == ArrayList.class
@@ -381,14 +439,51 @@ public class NightConverter {
                 convertConfigsToObject(subSrc, subDst, dstElementTypes, currentLevel + 1);
 
                 dst.add(subDst);
-            } else if (elem instanceof UnmodifiableConfig) {
+            } else if (element instanceof UnmodifiableConfig) {
                 Object elementObj = createInstance(currentType);
-                convertToObject((UnmodifiableConfig)elem, elementObj, currentType);
+                convertToObject((UnmodifiableConfig) element, elementObj, currentType);
 
                 dst.add(elementObj);
             } else {
-                String elementType = elem.getClass().toString();
+                String elementType = element.getClass().toString();
                 throw new InvalidValueException("Unexpected element of type " + elementType + " in collection of objects");
+            }
+        }
+    }
+
+    private <K, V> void convertConfigsToObject(
+            Map<String, Object> src, Map<K, V> dst,
+            Class<Map<K, V>> mapType
+    ) {
+        for (Map.Entry<String, Object> entry : src.entrySet()) {
+            K key = to(entry.getKey());
+            Object value = entry.getValue();
+
+            if (value == null) {
+                dst.put(key, null);
+            }
+
+            else if (value instanceof Map) {
+                Map<?, ?> subDst;
+
+                if (mapType.isInterface()
+                        || Modifier.isAbstract(mapType.getModifiers())) {
+
+                    subDst = new HashMap<>();
+                } else {
+                    subDst = createInstance(mapType);
+                }
+                convertConfigsToObject(value, subDst, mapType);
+
+                dst.put(key, subDst);
+            } else if (value instanceof UnmodifiableConfig) {
+                Object elementObj = createInstance(mapType);
+                convertToObject((UnmodifiableConfig)value, elementObj, mapType);
+
+                dst.put(key, elementObj);
+            } else {
+                String elemType = value.getClass().toString();
+                throw new InvalidValueException("Unexpected element of type " + elemType + " in map of objects");
             }
         }
     }

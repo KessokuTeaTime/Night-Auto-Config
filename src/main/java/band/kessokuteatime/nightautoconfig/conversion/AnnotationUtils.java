@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.conversion;
 
+import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.annotation.GlobalConversion;
 import band.kessokuteatime.nightautoconfig.annotation.GlobalConversions;
 import band.kessokuteatime.nightautoconfig.annotation.TypeConversion;
@@ -7,7 +8,6 @@ import com.electronwill.nightconfig.core.conversion.*;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,9 +30,25 @@ public final class AnnotationUtils {
     }
 
     public static Optional<Converter<Object, Object>> getConverter(Object object, Field field) {
+        // Global converters > type converters > field converters > default converters
+        return getGlobalConverter(object, field.getType())
+                .or(() -> getTypeConverter(field))
+                .or(() -> getFieldConverter(field))
+                .or(() -> getDefaultConverter(field.getType()));
     }
 
-    public static Optional<Converter<Object, Object>> getSingleConverter(Field field) {
+    public static Optional<Converter<Object, Object>> getDefaultConverter(Class<?> type) {
+        return Optional.ofNullable(NightAutoConfig.DEFAULT_CONVERTERS.getOrDefault(type, null))
+                .map(converterClass -> {
+                    try {
+                        return (Converter<Object, Object>) converterClass.newInstance();
+                    } catch (ReflectiveOperationException ex) {
+                        throw new ReflectionException("Cannot create a converter for type " + type, ex);
+                    }
+                });
+    }
+
+    public static Optional<Converter<Object, Object>> getFieldConverter(Field field) {
         if (field.isAnnotationPresent(Conversion.class)) {
             Conversion conversion = field.getAnnotation(Conversion.class);
             try {
@@ -66,10 +82,12 @@ public final class AnnotationUtils {
         GlobalConversion globalConversion = null;
         if (object.getClass().isAnnotationPresent(GlobalConversions.class)) {
             GlobalConversions globalConversions = object.getClass().getAnnotation(GlobalConversions.class);
+
+            // Find the most specific global converter for the type
             globalConversion = Arrays.stream(globalConversions.value())
                    .filter(gc -> gc.target() == type)
                    .findFirst()
-                   .orElse(null);
+                   .orElse(globalConversion);
         } else if (object.getClass().isAnnotationPresent(GlobalConversion.class)) {
             GlobalConversion gc = object.getClass().getAnnotation(GlobalConversion.class);
             if (gc.target() == type) {

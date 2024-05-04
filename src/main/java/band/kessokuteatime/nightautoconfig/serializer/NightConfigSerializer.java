@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.serializer;
 
+import band.kessokuteatime.nightautoconfig.conversion.NightConverter;
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import band.kessokuteatime.nightautoconfig.spec.Specs;
 import com.electronwill.nightconfig.core.Config;
@@ -61,7 +62,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
 
         this.spec = new ConfigSpec();
         Config config = builder.build();
-        new ObjectConverter().toConfig(createDefault(), config);
+        new NightConverter().toConfig(createDefault(), config);
 
         for (Config.Entry entry : config.entrySet()) {
             spec.define(entry.getKey(), entry.getValue());
@@ -75,7 +76,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     public void serialize(T t) throws SerializationException {
         Path path = type.getConfigPath(definition);
         if (Files.exists(path)) {
-            FileConfig config = new ObjectConverter().toConfig(t, builder::build);
+            FileConfig config = new NightConverter().toConfig(t, builder::build);
 
             //NightAutoConfig.normalize(config);
             //spec.correct(config);
@@ -104,7 +105,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             //NightAutoConfig.normalize(config);
             //spec.correct(config);
 
-            return new ObjectConverter().toObject(config, this::createDefault);
+            return new NightConverter().toObject(config, this::createDefault);
         } else {
             T t = createDefault();
             serialize(t);

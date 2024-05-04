@@ -70,7 +70,7 @@ public class NightExampleConfig implements ConfigData {
             "three"
     ));
 
-    @Conversion(MapToConfigConverter.StringKey.Impl.class)
+    //@Conversion(MapToConfigConverter.StringKey.Impl.class)
     public Map<String, Integer> exampleStringIntMap = new LinkedHashMap<>(Map.of(
             "one", 1,
             "two", 2,

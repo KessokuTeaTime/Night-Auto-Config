@@ -4,8 +4,7 @@
 	"package": "band.kessokuteatime.nightautoconfig.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ObjectConverterConditionFix",
-		"ObjectConverterMixin"
+		"ObjectConverterConditionFix"
 	],
 	"client": [
 	],
