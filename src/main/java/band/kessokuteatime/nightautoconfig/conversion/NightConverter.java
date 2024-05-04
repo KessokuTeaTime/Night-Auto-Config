@@ -245,20 +245,17 @@ public class NightConverter {
                             // Map of objects => the bottom elements need conversion
 
                             // Uses the current field value if there is one, or create a new map
-                            Map<Object, Object> dst = (Map<Object, Object>) field.get(object);
+                            Map<?, ?> dst = (Map<?, ?>) field.get(object);
                             if (dst == null) {
                                 if (fieldType == HashMap.class
                                         || fieldType.isInterface()
                                         || Modifier.isAbstract(fieldType.getModifiers())) {
                                     dst = new HashMap<>(cfg.valueMap().size()); // allocates the right size
                                 } else {
-                                    dst = (Map<Object, Object>) createInstance(fieldType);
+                                    dst = (Map<?, ?>) createInstance(fieldType);
                                 }
                                 field.set(object, dst);
                             }
-
-                            // Converts the keys and values of the map
-                            convertConfigsToObject(cfg.valueMap(), dst, (Class<Map<?, ?>>) fieldType);
                         } else {
                             // Gets or creates the field and convert it (if null OR not preserved)
                             Object fieldValue = field.get(object);
@@ -447,43 +444,6 @@ public class NightConverter {
             } else {
                 String elementType = element.getClass().toString();
                 throw new InvalidValueException("Unexpected element of type " + elementType + " in collection of objects");
-            }
-        }
-    }
-
-    private <K, V> void convertConfigsToObject(
-            Map<String, Object> src, Map<K, V> dst,
-            Class<Map<K, V>> mapType
-    ) {
-        for (Map.Entry<String, Object> entry : src.entrySet()) {
-            K key = to(entry.getKey());
-            Object value = entry.getValue();
-
-            if (value == null) {
-                dst.put(key, null);
-            }
-
-            else if (value instanceof Map) {
-                Map<?, ?> subDst;
-
-                if (mapType.isInterface()
-                        || Modifier.isAbstract(mapType.getModifiers())) {
-
-                    subDst = new HashMap<>();
-                } else {
-                    subDst = createInstance(mapType);
-                }
-                convertConfigsToObject(value, subDst, mapType);
-
-                dst.put(key, subDst);
-            } else if (value instanceof UnmodifiableConfig) {
-                Object elementObj = createInstance(mapType);
-                convertToObject((UnmodifiableConfig)value, elementObj, mapType);
-
-                dst.put(key, elementObj);
-            } else {
-                String elemType = value.getClass().toString();
-                throw new InvalidValueException("Unexpected element of type " + elemType + " in map of objects");
             }
         }
     }
