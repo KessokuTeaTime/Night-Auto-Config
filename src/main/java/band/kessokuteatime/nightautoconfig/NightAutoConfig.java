@@ -4,6 +4,7 @@ import band.kessokuteatime.nightautoconfig.conversion.api.FloatToDoubleConverter
 import band.kessokuteatime.nightautoconfig.conversion.api.NumberToLongConverter;
 import band.kessokuteatime.nightautoconfig.example.config.ExampleConfig;
 import band.kessokuteatime.nightautoconfig.example.config.NightExampleConfig;
+import band.kessokuteatime.nightautoconfig.serializer.NightConfigTemporarySerializer;
 import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.conversion.Converter;
@@ -34,8 +35,11 @@ public class NightAutoConfig implements ClientModInitializer {
                     NAME
             );
 
-            AutoConfig.register(NightExampleConfig.class, ConfigType.TOML::defaultSerializer);
-            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.TOML::defaultSerializer));
+            AutoConfig.register(NightExampleConfig.class, new NightConfigTemporarySerializer.Builder(ConfigType.TOML)::build);
+            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(new NightConfigTemporarySerializer.Builder(ConfigType.TOML)::build));
+
+            //AutoConfig.register(NightExampleConfig.class, ConfigType.TOML::defaultSerializer);
+            //AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.TOML::defaultSerializer));
         }
     }
 

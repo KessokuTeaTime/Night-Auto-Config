@@ -64,8 +64,10 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
         public ExamplePairOfInts[] complexArray;
 
+        /*
         @KeySerializable(ExamplePairOfIntsSerializable.class)
         public Map<ExamplePairOfInts, ExamplePairOfIntPairs> complexMap;
+         */
 
         public ModuleA() {
             this.anEnum = ExampleEnum.FOO;
@@ -85,10 +87,12 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
             this.complexArray = new ExamplePairOfInts[]{
                     new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
             };
+            /*
             this.complexMap = new LinkedHashMap<>(Map.of(
                     new ExamplePairOfInts(0, 1), new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4)),
                     new ExamplePairOfInts(3, 7), new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4))
             ));
+             */
         }
     }
 
