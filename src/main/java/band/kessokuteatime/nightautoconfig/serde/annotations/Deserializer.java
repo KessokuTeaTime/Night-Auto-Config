@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 
 @Repeatable(DeserializersContainer.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD})
+@Target(ElementType.TYPE)
 public @interface Deserializer {
     Class<? extends ValueDeserializerProvider<?, ?>> value();
 }

@@ -1,6 +1,7 @@
 package band.kessokuteatime.nightautoconfig.config;
 
 import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
+import band.kessokuteatime.nightautoconfig.serde.deserializer.RiskyFloatingPointDeserializer;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
@@ -10,6 +11,9 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.UnaryOperator;
 
 public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {
@@ -52,7 +56,14 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     }
 
     @Override
-    public void serialize(T t) {
+    public void serialize(T t) throws SerializationException {
+        Path path = type.getConfigPath(definition);
+        try {
+            createFile(path);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+
         FileConfig config = serializer().serializeFields(t, builder::build).checked();
 
         config.save();
@@ -60,7 +71,14 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     }
 
     @Override
-    public T deserialize() {
+    public T deserialize() throws SerializationException {
+        Path path = type.getConfigPath(definition);
+        try {
+            createFile(path);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+
         FileConfig config = builder.build();
         config.load();
 
@@ -76,11 +94,27 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         return Utils.constructUnsafely(configClass);
     }
 
+    private void createFile(Path path) throws IOException {
+        if (!Files.exists(path)) {
+            Files.createDirectories(path.getParent());
+            Files.createFile(path);
+        }
+    }
+
     private ObjectSerializer serializer() {
-        return ObjectSerializer.standard();
+        return ObjectSerializer
+                .builder()
+                .build();
     }
 
     private ObjectDeserializer deserializer() {
-        return ObjectDeserializer.standard();
+        var builder = ObjectDeserializer.builder();
+        builder.withDeserializerProvider(((valueClass, resultType) -> resultType.getSatisfyingRawType().map(resultClass -> {
+            if (RiskyFloatingPointDeserializer.isNumberTypeSupported(valueClass) && valueClass.isPrimitive()) {
+                return new RiskyFloatingPointDeserializer();
+            }
+            return null;
+        }).orElse(null)));
+        return builder.build();
     }
 }

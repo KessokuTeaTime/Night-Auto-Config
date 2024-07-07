@@ -3,6 +3,7 @@ package band.kessokuteatime.nightautoconfig.config.base;
 import band.kessokuteatime.nightautoconfig.config.NightConfigSerializer;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.hocon.HoconFormat;
 import com.electronwill.nightconfig.json.JsonFormat;
@@ -41,15 +42,23 @@ public enum ConfigType {
         return new NightConfigSerializer.Builder(this);
     }
 
+    public <T extends ConfigData> ConfigSerializer.Factory<T> serializer(UnaryOperator<GenericBuilder<com.electronwill.nightconfig.core.Config, FileConfig>> genericBuilderConstructor) {
+        return (definition, configClass) -> builder()
+                .then(genericBuilderConstructor)
+                .build(definition, configClass);
+    }
+
     public <T extends ConfigData> NightConfigSerializer<T> defaultSerializer(Config definition, Class<T> configClass) {
         return builder()
                 .then(GenericBuilder::preserveInsertionOrder)
                 .build(definition, configClass);
     }
 
-    public <T extends ConfigData> ConfigSerializer.Factory<T> serializer(UnaryOperator<GenericBuilder<com.electronwill.nightconfig.core.Config, FileConfig>> genericBuilderConstructor) {
-        return (definition, configClass) -> builder()
-                .then(genericBuilderConstructor)
+    public <T extends ConfigData> NightConfigSerializer<T> fileWatcherSerializer(Config definition, Class<T> configClass) {
+        return builder()
+                .then(GenericBuilder::preserveInsertionOrder)
+                .then(GenericBuilder::autosave)
+                .then(GenericBuilder::autoreload)
                 .build(definition, configClass);
     }
 

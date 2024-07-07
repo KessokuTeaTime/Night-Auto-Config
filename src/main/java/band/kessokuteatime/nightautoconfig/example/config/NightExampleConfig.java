@@ -22,11 +22,13 @@ public class NightExampleConfig implements ConfigData {
         TENTH
     }
 
-    //public int exampleInt = 10;
+    public int exampleInt = 10;
+
+    public long exampleLong = 100L;
 
     public double exampleDouble = 3.14159;
 
-    //public float exampleFloat = 2.71828F;
+    public float exampleFloat = 2.71828F;
 
     public boolean exampleBoolean = true;
 
