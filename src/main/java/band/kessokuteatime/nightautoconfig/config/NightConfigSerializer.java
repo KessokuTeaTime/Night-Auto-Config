@@ -1,6 +1,6 @@
-package band.kessokuteatime.nightautoconfig.serializer;
+package band.kessokuteatime.nightautoconfig.config;
 
-import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
+import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
@@ -10,11 +10,6 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.function.UnaryOperator;
 
 public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {
@@ -57,48 +52,35 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     }
 
     @Override
-    public void serialize(T t) throws SerializationException {
-        Path path = type.getConfigPath(definition);
-        try {
-            createFile(path);
-            FileConfig config = ObjectSerializer.standard().serializeFields(t, builder::build).checked();
+    public void serialize(T t) {
+        FileConfig config = serializer().serializeFields(t, builder::build).checked();
 
-            config.save();
-            config.close();
-        } catch (IOException e) {
-            throw new SerializationException(e);
-        }
-    }
-
-    private void createFile(Path path) throws IOException {
-        if (!Files.exists(path)) {
-            Files.createDirectories(path.getParent());
-            Files.createFile(path);
-        }
-
-        // Clear file contents
-        Files.newBufferedWriter(path, StandardOpenOption.TRUNCATE_EXISTING).close();
+        config.save();
+        config.close();
     }
 
     @Override
-    public T deserialize() throws SerializationException {
-        Path path = type.getConfigPath(definition);
-        if (Files.exists(path)) {
-            FileConfig config = builder.build();
-            config.load();
+    public T deserialize() {
+        FileConfig config = builder.build();
+        config.load();
 
-            if (config.isEmpty()) {
-                return createDefault();
-            } else {
-                return ObjectDeserializer.standard().deserializeFields(config, this::createDefault);
-            }
-        } else {
+        if (config.isEmpty()) {
             return createDefault();
+        } else {
+            return deserializer().deserializeFields(config, this::createDefault);
         }
     }
 
     @Override
     public T createDefault() {
         return Utils.constructUnsafely(configClass);
+    }
+
+    private ObjectSerializer serializer() {
+        return ObjectSerializer.standard();
+    }
+
+    private ObjectDeserializer deserializer() {
+        return ObjectDeserializer.standard();
     }
 }

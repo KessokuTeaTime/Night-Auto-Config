@@ -2,7 +2,7 @@ package band.kessokuteatime.nightautoconfig;
 
 import band.kessokuteatime.nightautoconfig.example.config.ExampleConfig;
 import band.kessokuteatime.nightautoconfig.example.config.NightExampleConfig;
-import band.kessokuteatime.nightautoconfig.serializer.base.ConfigType;
+import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.api.ClientModInitializer;
