@@ -1,26 +1,13 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
-import band.kessokuteatime.nightautoconfig.annotation.KeySerializable;
-import band.kessokuteatime.nightautoconfig.annotation.Nested;
-import band.kessokuteatime.nightautoconfig.conversion.api.StringSerializable;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Config(name = "autoconfig1u_example")
-/*
-@Config.Gui.Background("minecraft:textures/block/oak_planks.png")
-@Config.Gui.CategoryBackground(
-        category = "b",
-        background = "minecraft:textures/block/stone.png"
-)
-
- */
 public class ExampleConfig extends PartitioningSerializer.GlobalData {
     @ConfigEntry.Category("a")
     @ConfigEntry.Gui.TransitiveObject
@@ -35,7 +22,6 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
     public ModuleB moduleB = new ModuleB();
 
     @Config(name = "module_a")
-    @Nested
     public static class ModuleA implements ConfigData {
         @ConfigEntry.Gui.PrefixText
         public boolean aBoolean = true;
@@ -97,11 +83,9 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
     }
 
     @Config(name = "empty")
-    @Nested
     public static class ModuleEmpty implements ConfigData {
     }
 
-    @Nested
     @Config(name = "module_b")
     public static class ModuleB implements ConfigData {
         @ConfigEntry.BoundedDiscrete(min = -1000L, max = 2000L)
@@ -153,23 +137,5 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
     public enum ExampleEnum {
         FOO, BAR, BAZ
-    }
-
-    public static class ExamplePairOfIntsSerializable implements StringSerializable<ExamplePairOfInts> {
-        @Override
-        public String convertToString(ExamplePairOfInts value) {
-            return String.format("<%d, %d>", value.foo, value.bar);
-        }
-
-        @Override
-        public ExamplePairOfInts convertFromString(String value) {
-            Pattern pattern = Pattern.compile("\\s*<\\s*(\\d+)\\s*,\\s*(\\d+)\\s*>\\s*");
-            Matcher matcher = pattern.matcher(value);
-            if (matcher.matches()) {
-                return new ExamplePairOfInts(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
-            } else {
-                throw new IllegalArgumentException("Invalid format: " + value);
-            }
-        }
     }
 }

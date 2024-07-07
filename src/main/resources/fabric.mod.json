@@ -25,7 +25,7 @@
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+	  "nightautoconfig.mixins.json"
   ],
   "custom": {
     "modmenu": {

@@ -22,8 +22,8 @@ public class NightAutoConfig implements ClientModInitializer {
                     NAME
             );
 
-            AutoConfig.register(NightExampleConfig.class, ConfigType.TOML::defaultSerializer);
-            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.TOML::defaultSerializer));
+            AutoConfig.register(NightExampleConfig.class, ConfigType.JSON::defaultSerializer);
+            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.JSON::defaultSerializer));
         }
     }
 }
