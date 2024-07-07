@@ -12,7 +12,7 @@ fabric-loom = "1.6-SNAPSHOT"
 modpublisher = "2.1.0"
 
 cloth-config = "15.0.127"
-night-config = "3.7.4"
+night-config = "3.8.0"
 
 # id
 id-modrinth = "id"
