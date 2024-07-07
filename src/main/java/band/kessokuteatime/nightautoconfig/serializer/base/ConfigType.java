@@ -4,6 +4,7 @@ import band.kessokuteatime.nightautoconfig.serializer.NightConfigSerializer;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
+import com.electronwill.nightconfig.core.serde.ObjectSerializer;
 import com.electronwill.nightconfig.hocon.HoconFormat;
 import com.electronwill.nightconfig.json.JsonFormat;
 import com.electronwill.nightconfig.toml.TomlFormat;
@@ -13,6 +14,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.util.Utils;
 
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public enum ConfigType {
     JSON("json"), YAML("yaml"), TOML("toml"), HOCON("conf");
@@ -55,7 +57,7 @@ public enum ConfigType {
     }
 
     public com.electronwill.nightconfig.core.Config wrap(Object object) {
-        com.electronwill.nightconfig.core.Config config = switch (this) {
+        Supplier<com.electronwill.nightconfig.core.Config> supplier = () -> switch (this) {
             case JSON -> JsonFormat.newConfig();
             case YAML -> YamlFormat.newConfig();
             case TOML -> TomlFormat.newConfig();
@@ -64,12 +66,12 @@ public enum ConfigType {
 
         if (object instanceof com.electronwill.nightconfig.core.Config oldConfig) {
             // Migrate entries
+            var config = supplier.get();
             config.addAll(oldConfig);
+            return config;
         } else {
-            new ObjectConverter().toConfig(object, config);
+            return ObjectSerializer.standard().serializeFields(object, supplier);
         }
-
-        return config;
     }
 
     public static final ConfigType DEFAULT_SIMPLE = JSON;
