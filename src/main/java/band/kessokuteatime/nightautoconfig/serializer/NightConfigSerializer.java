@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.function.UnaryOperator;
 
 public class NightConfigSerializer<T extends ConfigData> implements ConfigSerializer<T> {
@@ -60,7 +61,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         Path path = type.getConfigPath(definition);
         try {
             createFile(path);
-            FileConfig config = ObjectSerializer.standard().serializeFields(t, builder::build);
+            FileConfig config = ObjectSerializer.standard().serializeFields(t, builder::build).checked();
 
             config.save();
             config.close();
@@ -76,7 +77,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         }
 
         // Clear file contents
-        new FileWriter(path.toFile(), false).close();
+        Files.newBufferedWriter(path, StandardOpenOption.TRUNCATE_EXISTING).close();
     }
 
     @Override
@@ -92,9 +93,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
                 return ObjectDeserializer.standard().deserializeFields(config, this::createDefault);
             }
         } else {
-            T t = createDefault();
-            serialize(t);
-            return t;
+            return createDefault();
         }
     }
 
