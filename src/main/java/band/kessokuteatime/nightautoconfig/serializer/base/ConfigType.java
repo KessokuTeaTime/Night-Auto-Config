@@ -3,6 +3,7 @@ package band.kessokuteatime.nightautoconfig.serializer.base;
 import band.kessokuteatime.nightautoconfig.serializer.NightConfigSerializer;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
+import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.core.serde.ObjectSerializer;
 import com.electronwill.nightconfig.hocon.HoconFormat;
@@ -11,10 +12,12 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.yaml.YamlFormat;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
 
 import java.nio.file.Path;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 public enum ConfigType {
     JSON("json"), YAML("yaml"), TOML("toml"), HOCON("conf");
@@ -44,6 +47,12 @@ public enum ConfigType {
     public <T extends ConfigData> NightConfigSerializer<T> defaultSerializer(Config definition, Class<T> configClass) {
         return builder()
                 .then(GenericBuilder::preserveInsertionOrder)
+                .build(definition, configClass);
+    }
+
+    public <T extends ConfigData> ConfigSerializer.Factory<T> serializer(UnaryOperator<GenericBuilder<com.electronwill.nightconfig.core.Config, FileConfig>> genericBuilderConstructor) {
+        return (definition, configClass) -> builder()
+                .then(genericBuilderConstructor)
                 .build(definition, configClass);
     }
 

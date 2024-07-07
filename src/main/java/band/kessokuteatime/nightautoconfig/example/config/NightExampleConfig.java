@@ -22,11 +22,11 @@ public class NightExampleConfig implements ConfigData {
         TENTH
     }
 
-    public int exampleInt = 10;
+    //public int exampleInt = 10;
 
     public double exampleDouble = 3.14159;
 
-    public float exampleFloat = 2.71828F;
+    //public float exampleFloat = 2.71828F;
 
     public boolean exampleBoolean = true;
 
@@ -44,18 +44,20 @@ public class NightExampleConfig implements ConfigData {
             "three"
     ));
 
+    /*
     public Map<String, Integer> exampleStringIntMap = new LinkedHashMap<>(Map.of(
             "one", 1,
             "two", 2,
             "three", 3
     ));
+     */
 
     @ConfigEntry.Gui.TransitiveObject
     //@ConfigEntry.Category("inner")
     public InnerConfig innerConfig = new InnerConfig();
 
     public static class InnerConfig {
-        public int innerInt = 42;
+        //public int innerInt = 42;
 
         public String innerString = "S.T.A.Y.";
 

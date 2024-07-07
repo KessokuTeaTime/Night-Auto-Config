@@ -10,6 +10,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,27 +22,26 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     protected final ConfigType type;
     protected final GenericBuilder<Config, FileConfig> builder;
 
-    public record Builder(ConfigType type, UnaryOperator<GenericBuilder<Config, FileConfig>> builder) {
+    public record Builder(ConfigType type, UnaryOperator<GenericBuilder<Config, FileConfig>> genericBuilder) {
         public Builder(ConfigType type) {
             this(type, UnaryOperator.identity());
         }
 
         public Builder type(ConfigType type) {
-            return new Builder(type, builder);
-        }
-
-        public Builder builder(UnaryOperator<GenericBuilder<Config, FileConfig>> builder) {
-            return new Builder(type, builder);
+            return new Builder(type, genericBuilder);
         }
 
         public Builder then(UnaryOperator<GenericBuilder<Config, FileConfig>> then) {
-            return new Builder(type, b -> then.apply(builder.apply(b)));
+            return new Builder(type, b -> then.apply(genericBuilder.apply(b)));
         }
 
         public <T extends ConfigData> NightConfigSerializer<T> build(
                 me.shedaniel.autoconfig.annotation.Config definition, Class<T> configClass
         ) {
-            return new NightConfigSerializer<>(definition, configClass, type, builder.apply(FileConfig.builder(type.getConfigPath(definition))));
+            return new NightConfigSerializer<>(
+                    definition, configClass, type,
+                    genericBuilder.apply(FileConfig.builder(type.getConfigPath(definition)))
+            );
         }
     }
 
@@ -52,27 +52,31 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         this.definition = definition;
         this.configClass = configClass;
         this.type = type;
-        this.builder = builder.preserveInsertionOrder();
+        this.builder = builder;
     }
 
     @Override
     public void serialize(T t) throws SerializationException {
         Path path = type.getConfigPath(definition);
-        if (Files.exists(path)) {
+        try {
+            createFile(path);
             FileConfig config = ObjectSerializer.standard().serializeFields(t, builder::build);
 
             config.save();
             config.close();
-        } else {
-            try {
-                Files.createDirectories(path.getParent());
-                Files.createFile(path);
-
-                serialize(t);
-            } catch (IOException e) {
-                throw new SerializationException(e);
-            }
+        } catch (IOException e) {
+            throw new SerializationException(e);
         }
+    }
+
+    private void createFile(Path path) throws IOException {
+        if (!Files.exists(path)) {
+            Files.createDirectories(path.getParent());
+            Files.createFile(path);
+        }
+
+        // Clear file contents
+        new FileWriter(path.toFile(), false).close();
     }
 
     @Override
@@ -82,7 +86,11 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             FileConfig config = builder.build();
             config.load();
 
-            return ObjectDeserializer.standard().deserializeFields(config, this::createDefault);
+            if (config.isEmpty()) {
+                return createDefault();
+            } else {
+                return ObjectDeserializer.standard().deserializeFields(config, this::createDefault);
+            }
         } else {
             T t = createDefault();
             serialize(t);
