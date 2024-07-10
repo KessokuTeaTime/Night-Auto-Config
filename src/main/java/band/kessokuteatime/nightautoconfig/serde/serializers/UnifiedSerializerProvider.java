@@ -1,4 +1,4 @@
-package band.kessokuteatime.nightautoconfig.serde.serializer;
+package band.kessokuteatime.nightautoconfig.serde.serializers;
 
 import com.electronwill.nightconfig.core.serde.SerializerContext;
 import com.electronwill.nightconfig.core.serde.ValueSerializer;

@@ -86,18 +86,18 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             throw new SerializationException(e);
         }
 
-        FileConfig config = builder.build();
-        config.load();
+        try {
+            FileConfig config = builder.build();
+            config.load();
 
-        if (config.isEmpty()) {
-            return createDefault();
-        } else {
-            try {
-                return deserializer(configClass).deserializeFields(config, this::createDefault);
-            } catch (Exception e) {
-                NightAutoConfig.LOGGER.error(e.getMessage(), e);
+            if (config.isEmpty()) {
                 return createDefault();
+            } else {
+                return deserializer(configClass).deserializeFields(config, this::createDefault);
             }
+        } catch (Exception e) {
+            NightAutoConfig.LOGGER.error(e.getMessage(), e);
+            return createDefault();
         }
     }
 

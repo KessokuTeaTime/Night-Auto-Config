@@ -22,8 +22,8 @@ public class NightAutoConfig implements ClientModInitializer {
                     NAME
             );
 
-            AutoConfig.register(NightExampleConfig.class, ConfigType.TOML::fileWatcherSerializer);
-            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.TOML::fileWatcherSerializer));
+            AutoConfig.register(NightExampleConfig.class, ConfigType.DEFAULT_COMMENTED::fileWatcherSerializer);
+            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.DEFAULT_COMMENTED::fileWatcherSerializer));
         }
     }
 }

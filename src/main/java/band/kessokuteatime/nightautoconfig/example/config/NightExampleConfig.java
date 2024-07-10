@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
+import com.electronwill.nightconfig.core.serde.annotations.SerdeComment;
 import com.electronwill.nightconfig.core.serde.annotations.SerdeDefault;
 import com.electronwill.nightconfig.core.serde.annotations.SerdeKey;
 import me.shedaniel.autoconfig.ConfigData;
@@ -31,6 +32,8 @@ public class NightExampleConfig implements ConfigData {
 
     private transient final Supplier<Long> exampleLongProvider = () -> 100L;
 
+    @SerdeComment("This is a comment.")
+    @SerdeComment("This is another comment.")
     @SerdeDefault(provider = "exampleLongProvider")
     public long exampleLong = exampleLongProvider.get();
 
@@ -83,6 +86,7 @@ public class NightExampleConfig implements ConfigData {
 
     private transient final Supplier<InnerConfig> innerConfigSupplier = InnerConfig::new;
 
+    @SerdeComment("This is a comment too.")
     @SerdeDefault(provider = "innerConfigSupplier")
     @ConfigEntry.Gui.TransitiveObject
     //@ConfigEntry.Category("inner")

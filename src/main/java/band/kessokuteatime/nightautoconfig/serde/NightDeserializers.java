@@ -1,6 +1,6 @@
 package band.kessokuteatime.nightautoconfig.serde;
 
-import band.kessokuteatime.nightautoconfig.serde.deserializer.FloatingPointDeserializer;
+import band.kessokuteatime.nightautoconfig.serde.deserializers.FloatingPointDeserializer;
 import band.kessokuteatime.nightautoconfig.util.TypeUtil;
 import com.electronwill.nightconfig.core.serde.*;
 
