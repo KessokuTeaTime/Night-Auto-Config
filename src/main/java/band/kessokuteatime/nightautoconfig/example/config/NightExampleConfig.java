@@ -7,6 +7,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 @Config(name = "example")
 public class NightExampleConfig implements ConfigData {
@@ -22,24 +23,48 @@ public class NightExampleConfig implements ConfigData {
         NINTH,
         TENTH
     }
-    
-    public int exampleInt = 10;
 
-    public long exampleLong = 100L;
+    private transient final Supplier<Integer> exampleIntProvider = () -> 10;
 
-    public double exampleDouble = 3.14159;
+    @SerdeDefault(provider = "exampleIntProvider")
+    public int exampleInt = exampleIntProvider.get();
 
-    public float exampleFloat = 2.71828F;
+    private transient final Supplier<Long> exampleLongProvider = () -> 100L;
 
-    public boolean exampleBoolean = true;
+    @SerdeDefault(provider = "exampleLongProvider")
+    public long exampleLong = exampleLongProvider.get();
 
-    public String exampleString = "Hello, World!";
+    private transient final Supplier<Double> exampleDoubleProvider = () -> 3.14159;
 
+    @SerdeDefault(provider = "exampleDoubleProvider")
+    public double exampleDouble = exampleDoubleProvider.get();
+
+    private transient final Supplier<Float> exampleFloatProvider = () -> 2.71828F;
+
+    @SerdeDefault(provider = "exampleFloatProvider")
+    public float exampleFloat = exampleFloatProvider.get();
+
+    private transient final Supplier<Boolean> exampleBooleanProvider = () -> true;
+
+    @SerdeDefault(provider = "exampleBooleanProvider")
+    public boolean exampleBoolean = exampleBooleanProvider.get();
+
+    private transient final Supplier<String> exampleStringProvider = () -> "Hello, world!";
+
+    @SerdeDefault(provider = "exampleStringProvider")
+    public String exampleString = exampleStringProvider.get();
+
+    private transient final Supplier<String> exampleString2Provider = () -> "Another string.";
+
+    @SerdeDefault(provider = "exampleString2Provider")
     @SerdeKey("stringWithCustomKey")
-    public String exampleString2 = "Another String.";
+    public String exampleString2 = exampleString2Provider.get();
 
+    private transient final Supplier<String> categorizedStringProvider = () -> "Categorized!";
+
+    @SerdeDefault(provider = "categorizedStringProvider")
     //@ConfigEntry.Category("category")
-    public String categorizedString = "Categorized!";
+    public String categorizedString = categorizedStringProvider.get();
 
     public ArrayList<String> exampleStringArrayList = new ArrayList<>(List.of(
             "one",
@@ -47,27 +72,36 @@ public class NightExampleConfig implements ConfigData {
             "three"
     ));
 
-    /*
-    public Map<String, Integer> exampleStringIntMap = new LinkedHashMap<>(Map.of(
+    private transient final Supplier<Map<String, Integer>> exampleStringIntMapProvider = () -> new LinkedHashMap<>(Map.of(
             "one", 1,
             "two", 2,
             "three", 3
     ));
-     */
 
+    @SerdeDefault(provider = "exampleStringIntMapProvider")
+    public Map<String, Integer> exampleStringIntMap = exampleStringIntMapProvider.get();
+
+    private transient final Supplier<InnerConfig> innerConfigSupplier = InnerConfig::new;
+
+    @SerdeDefault(provider = "innerConfigSupplier")
     @ConfigEntry.Gui.TransitiveObject
     //@ConfigEntry.Category("inner")
-    public InnerConfig innerConfig = new InnerConfig();
+    public InnerConfig innerConfig = innerConfigSupplier.get();
 
     public static class InnerConfig {
-        public int innerInt = 42;
+        private transient final Supplier<Integer> innerIntProvider = () -> 42;
 
-        public String innerString = "S.T.A.Y.";
+        @SerdeDefault(provider = "innerIntProvider")
+        public int innerInt = innerIntProvider.get();
 
-        public String restrictedString = "case 1";
+        private transient final Supplier<String> innerStringProvider = () -> "S.T.A.Y";
 
-        public ExampleEnum innerEnum = ExampleEnum.SECOND;
+        @SerdeDefault(provider = "innerStringProvider")
+        public String innerString = innerStringProvider.get();
 
-        public ExampleEnum restrictedEnum = ExampleEnum.SECOND;
+        private transient final Supplier<ExampleEnum> innerEnumProvider = () -> ExampleEnum.SECOND;
+
+        @SerdeDefault(provider = "innerEnumProvider")
+        public ExampleEnum innerEnum = innerEnumProvider.get();
     }
 }

@@ -40,13 +40,13 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
         )
         public ExamplePairOfIntPairs anObject;
 
-        /*
         public List<Integer> list;
 
         public int[] array;
 
         public Map<String, Integer> map;
 
+        /*
         public List<ExamplePairOfInts> complexList;
 
         public ExamplePairOfInts[] complexArray;
@@ -60,7 +60,6 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
             this.anEnumWithButton = ExampleEnum.FOO;
             this.aString = "hello";
             this.anObject = new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
-            /*
             this.list = new ArrayList<>(List.of(1, 2, 3));
             this.array = new int[]{1, 2, 3};
             this.map = new LinkedHashMap<>(Map.of(
@@ -68,6 +67,7 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
                     "bar", 2
             ));
 
+            /*
             this.complexList = new ArrayList<>(List.of(
                     new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
             ));
@@ -91,11 +91,8 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
         @ConfigEntry.BoundedDiscrete(min = -1000L, max = 2000L)
         public int intSlider = 500;
 
-        /*
         @ConfigEntry.BoundedDiscrete(min = -1000L, max = 2000L)
-        public Long longSlider = 500L;
-
-         */
+        public long longSlider = 500L;
 
         @ConfigEntry.Gui.TransitiveObject
         public ExamplePairOfIntPairs anObject = new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4));
