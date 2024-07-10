@@ -1,4 +1,4 @@
-### <p align=right>[`→` CurseForge](https://www.curseforge.com/minecraft/mc-mods/modid)&ensp;[`→` Modrinth](https://modrinth.com/mod/modid)</p>
+### <p align=right>[`→` CurseForge](https://www.curseforge.com/minecraft/mc-mods/1061154)&ensp;[`→` Modrinth](https://modrinth.com/mod/night-auto-config)</p>
 
 # Night Auto Config
 
