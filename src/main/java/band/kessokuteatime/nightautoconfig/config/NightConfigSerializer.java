@@ -1,7 +1,7 @@
 package band.kessokuteatime.nightautoconfig.config;
 
 import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
-import band.kessokuteatime.nightautoconfig.serde.deserializer.RiskyFloatingPointDeserializer;
+import band.kessokuteatime.nightautoconfig.serde.NightDeserializers;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
@@ -109,12 +109,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
 
     private ObjectDeserializer deserializer() {
         var builder = ObjectDeserializer.builder();
-        builder.withDeserializerProvider(((valueClass, resultType) -> resultType.getSatisfyingRawType().map(resultClass -> {
-            if (RiskyFloatingPointDeserializer.isNumberTypeSupported(valueClass) && valueClass.isPrimitive()) {
-                return new RiskyFloatingPointDeserializer();
-            }
-            return null;
-        }).orElse(null)));
+        NightDeserializers.provideToBuilder(builder);
         return builder.build();
     }
 }

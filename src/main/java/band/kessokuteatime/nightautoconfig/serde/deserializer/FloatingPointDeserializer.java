@@ -6,16 +6,17 @@ import com.electronwill.nightconfig.core.serde.ValueDeserializer;
 
 import java.util.Optional;
 
-public class RiskyFloatingPointDeserializer implements ValueDeserializer<Number, Number> {
+public class FloatingPointDeserializer implements ValueDeserializer<Number, Number> {
     public static boolean isNumberTypeSupported(Class<?> t) {
         return t == Float.class || t == float.class || t == Double.class || t == double.class;
     }
 
     @Override
     public Number deserialize(Number value, Optional<TypeConstraint> resultType, DeserializerContext ctx) {
-        TypeConstraint numberType = resultType.orElseThrow(() -> new RuntimeException(
-                "Cannot deserialize a value with a risky number conversion without knowing the number type"
-        ));
+        TypeConstraint numberType = resultType
+                .orElseThrow(() -> new RuntimeException(
+                        "Cannot deserialize a value with a floating point conversion without knowing the number type"
+                ));
         Class<?> resultCls = numberType.getSatisfyingRawType()
                 .orElseThrow(() -> new RuntimeException(
                         "Could not find a concrete number type that can satisfy the constraint " + numberType
@@ -26,13 +27,10 @@ public class RiskyFloatingPointDeserializer implements ValueDeserializer<Number,
             double d = value.doubleValue();
             if (resultCls == Float.class || resultCls == float.class) {
                 // double to float
-                float f = (float) d;
-                if (((double) f) == d) {
-                    return f;
-                }
+               return (float) d;
             } else {
                 throw new RuntimeException(String.format(
-                        "Cannot deserialize from %s to %s: risky conversion not implemented, you should change your types.",
+                        "Cannot deserialize from %s to %s: floating point conversion not implemented, you should change your types.",
                         valueCls, resultCls
                 ));
             }
@@ -40,19 +38,17 @@ public class RiskyFloatingPointDeserializer implements ValueDeserializer<Number,
             float f = value.floatValue();
             if (resultCls == Double.class || resultCls == double.class) {
                 // float to double
-                double d = (double) f;
-                if (((float) d) == f) {
-                    return d;
-                }
+                return f;
             } else {
                 throw new RuntimeException(String.format(
-                        "Cannot deserialize from %s to %s: risky conversion not implemented, you should change your types.",
+                        "Cannot deserialize from %s to %s: floating point conversion not implemented, you should change your types.",
                         valueCls, resultCls
                 ));
             }
         }
+
         throw new RuntimeException(String.format(
-                "Cannot deserialize %s to %s: the conversion would be lossy", value, resultCls
+                "Cannot deserialize %s to %s: not a floating point", value, resultCls
         ));
     }
 }
