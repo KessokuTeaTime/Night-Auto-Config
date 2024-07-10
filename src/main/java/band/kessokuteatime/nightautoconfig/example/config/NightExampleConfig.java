@@ -51,18 +51,18 @@ public class NightExampleConfig implements ConfigData {
 
     private transient final Supplier<String> exampleStringProvider = () -> "Hello, world!";
 
-    @SerdeDefault(provider = "exampleStringProvider")
+    //@SerdeDefault(provider = "exampleStringProvider")
     public String exampleString = exampleStringProvider.get();
 
     private transient final Supplier<String> exampleString2Provider = () -> "Another string.";
 
-    @SerdeDefault(provider = "exampleString2Provider")
+    //@SerdeDefault(provider = "exampleString2Provider")
     @SerdeKey("stringWithCustomKey")
     public String exampleString2 = exampleString2Provider.get();
 
     private transient final Supplier<String> categorizedStringProvider = () -> "Categorized!";
 
-    @SerdeDefault(provider = "categorizedStringProvider")
+    //@SerdeDefault(provider = "categorizedStringProvider")
     //@ConfigEntry.Category("category")
     public String categorizedString = categorizedStringProvider.get();
 

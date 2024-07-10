@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.config;
 
+import band.kessokuteatime.nightautoconfig.NightAutoConfig;
 import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
 import band.kessokuteatime.nightautoconfig.serde.NightDeserializers;
 import band.kessokuteatime.nightautoconfig.serde.NightSerializers;
@@ -66,11 +67,14 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             throw new SerializationException(e);
         }
 
-        System.out.println(t);
-        FileConfig config = serializer(configClass).serializeFields(t, builder::build).checked();
+        try {
+            FileConfig config = serializer(configClass).serializeFields(t, builder::build).checked();
 
-        config.save();
-        config.close();
+            config.save();
+            config.close();
+        } catch (Exception e) {
+            NightAutoConfig.LOGGER.error(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -88,7 +92,12 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         if (config.isEmpty()) {
             return createDefault();
         } else {
-            return deserializer(configClass).deserializeFields(config, this::createDefault);
+            try {
+                return deserializer(configClass).deserializeFields(config, this::createDefault);
+            } catch (Exception e) {
+                NightAutoConfig.LOGGER.error(e.getMessage(), e);
+                return createDefault();
+            }
         }
     }
 
