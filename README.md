@@ -6,6 +6,63 @@ Serialize everything! **Night Auto Config** is a **[Night Config](https://github
 
 **Night Auto Config** introduces a `NightConfigSerializer` to satisfy **Auto Config**'s requirement of a serializer's implementation. You can choose from all the available config formats of **Night Config,** and use the serializer just as other common serializers, even along with a `PartitioningSerializer`.
 
+It is recommended to use [`JitPack`](https://jitpack.io/#KessokuTeaTime/Night-Auto-Config/1.0.0-fabric1.21) to implement **Night Auto Config** into your project.
+
+<details>
+
+<summary>Groovy</summary>
+
+<h6 align="right">build.gradle</h6>
+
+```groovy
+repositories {
+	maven { url "https://jitpack.io" }
+}
+
+dependencies {
+	implementation include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+}
+```
+
+<h6 align="right">gradle.properties</h6>
+
+```
+nightautoconfig_version={latest}
+```
+
+> [!NOTE]
+> You should replace `{latest}` with the latest [`tag name`](https://github.com/KessokuTeaTime/Night-Auto-Config/tags) of **Night Auto Config.**
+
+</details>
+
+<details>
+
+<summary>Kotlin DSL</summary>
+
+<h6 align="right">build.gradle.kts</h6>
+
+```kotlin
+repositories {
+	maven { url = uri("https://jitpack.io") }
+}
+
+dependencies {
+	implementation("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+	include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+}
+```
+
+<h6 align="right">gradle.properties</h6>
+
+```
+nightautoconfig_version={latest}
+```
+
+> [!NOTE]
+> You should replace `{latest}` with the latest [`tag name`](https://github.com/KessokuTeaTime/Night-Auto-Config/tags) of **Night Auto Config.**
+
+</details>
+
 Here's a brief example:
 
 `MyConfig.java`
