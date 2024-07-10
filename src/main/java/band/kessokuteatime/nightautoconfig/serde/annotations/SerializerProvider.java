@@ -4,9 +4,9 @@ import com.electronwill.nightconfig.core.serde.ValueSerializerProvider;
 
 import java.lang.annotation.*;
 
-@Repeatable(SerializersContainer.class)
+@Repeatable(SerializerProvidersContainer.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Serializer {
+public @interface SerializerProvider {
     Class<? extends ValueSerializerProvider<?, ?>> value();
 }

@@ -4,9 +4,9 @@ import com.electronwill.nightconfig.core.serde.ValueDeserializerProvider;
 
 import java.lang.annotation.*;
 
-@Repeatable(DeserializersContainer.class)
+@Repeatable(DeserializerProvidersContainer.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Deserializer {
+public @interface DeserializerProvider {
     Class<? extends ValueDeserializerProvider<?, ?>> value();
 }

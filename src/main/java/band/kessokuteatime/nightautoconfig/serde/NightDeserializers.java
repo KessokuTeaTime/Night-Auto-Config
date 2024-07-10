@@ -1,6 +1,7 @@
 package band.kessokuteatime.nightautoconfig.serde;
 
 import band.kessokuteatime.nightautoconfig.serde.deserializer.FloatingPointDeserializer;
+import band.kessokuteatime.nightautoconfig.util.TypeUtil;
 import com.electronwill.nightconfig.core.serde.*;
 
 public class NightDeserializers {
@@ -8,10 +9,10 @@ public class NightDeserializers {
 
     public static void provideToBuilder(ObjectDeserializerBuilder builder) {
         builder.withDeserializerProvider((valueClass, resultType) -> resultType.getSatisfyingRawType().map(resultClass -> {
-            if (FloatingPointDeserializer.isNumberTypeSupported(valueClass) && resultClass.isPrimitive()) {
+            if (FloatingPointDeserializer.isNumberTypeSupported(valueClass) && TypeUtil.isPrimitiveOrWrapperNumber(resultClass)) {
                 return FLOATING_POINT;
             }
-            return (ValueDeserializer<Object, Object>) (value, resultType1, ctx) -> null;
+            return null;
         }).orElse(null));
     }
 }

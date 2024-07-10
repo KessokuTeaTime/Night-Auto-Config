@@ -2,6 +2,8 @@ package band.kessokuteatime.nightautoconfig.config;
 
 import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
 import band.kessokuteatime.nightautoconfig.serde.NightDeserializers;
+import band.kessokuteatime.nightautoconfig.serde.NightSerializers;
+import band.kessokuteatime.nightautoconfig.util.AnnotationUtil;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
@@ -64,7 +66,8 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             throw new SerializationException(e);
         }
 
-        FileConfig config = serializer().serializeFields(t, builder::build).checked();
+        System.out.println(t);
+        FileConfig config = serializer(configClass).serializeFields(t, builder::build).checked();
 
         config.save();
         config.close();
@@ -85,7 +88,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         if (config.isEmpty()) {
             return createDefault();
         } else {
-            return deserializer().deserializeFields(config, this::createDefault);
+            return deserializer(configClass).deserializeFields(config, this::createDefault);
         }
     }
 
@@ -101,15 +104,25 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
         }
     }
 
-    private ObjectSerializer serializer() {
-        return ObjectSerializer
-                .builder()
-                .build();
+    private ObjectSerializer serializer(Class<?> cls) {
+        var builder = ObjectSerializer.builder();
+        NightSerializers.provideToBuilder(builder);
+
+        // Register serializer providers
+        var providers = AnnotationUtil.getSerializerProviders(cls);
+        providers.forEach(builder::withSerializerProvider);
+
+        return builder.build();
     }
 
-    private ObjectDeserializer deserializer() {
+    private ObjectDeserializer deserializer(Class<?> cls) {
         var builder = ObjectDeserializer.builder();
         NightDeserializers.provideToBuilder(builder);
+
+        // Register deserializer providers
+        var providers = AnnotationUtil.getDeserializerProviders(cls);
+        providers.forEach(builder::withDeserializerProvider);
+
         return builder.build();
     }
 }

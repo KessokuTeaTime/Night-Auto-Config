@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface DeserializersContainer {
-    Deserializer[] value();
+public @interface SerializerProvidersContainer {
+    SerializerProvider[] value();
 }

@@ -1,5 +1,6 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
+import com.electronwill.nightconfig.core.serde.annotations.SerdeDefault;
 import com.electronwill.nightconfig.core.serde.annotations.SerdeKey;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
@@ -21,7 +22,7 @@ public class NightExampleConfig implements ConfigData {
         NINTH,
         TENTH
     }
-
+    
     public int exampleInt = 10;
 
     public long exampleLong = 100L;
@@ -59,7 +60,7 @@ public class NightExampleConfig implements ConfigData {
     public InnerConfig innerConfig = new InnerConfig();
 
     public static class InnerConfig {
-        //public int innerInt = 42;
+        public int innerInt = 42;
 
         public String innerString = "S.T.A.Y.";
 
