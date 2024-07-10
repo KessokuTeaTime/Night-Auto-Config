@@ -4,6 +4,8 @@
 
 Serialize everything! **Night Auto Config** is a **[Night Config](https://github.com/TheElectronWill/Night-Config)** integration for **[Auto Config (now embedded in Cloth Config).](https://modrinth.com/mod/cloth-config)**
 
+## Implementation
+
 **Night Auto Config** introduces a `NightConfigSerializer` to satisfy **Auto Config**'s requirement of a serializer's implementation. You can choose from all the available config formats of **Night Config,** and use the serializer just as other common serializers, even along with a `PartitioningSerializer`.
 
 It is recommended to use [`JitPack`](https://jitpack.io/#KessokuTeaTime/Night-Auto-Config/1.0.0-fabric1.21) to implement **Night Auto Config** into your project.
@@ -59,6 +61,8 @@ nightautoconfig_version={latest}
 
 > [!NOTE]
 > You should replace `{latest}` with the latest [`tag name`](https://github.com/KessokuTeaTime/Night-Auto-Config/tags) of **Night Auto Config.**
+
+## Usage
 
 Here's a brief example:
 
