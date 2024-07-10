@@ -7,7 +7,9 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.Supplier;
 
 @Config(name = "example")
@@ -52,28 +54,36 @@ public class NightExampleConfig implements ConfigData {
     @SerdeDefault(provider = "exampleBooleanProvider")
     public boolean exampleBoolean = exampleBooleanProvider.get();
 
+    private transient final Supplier<Color> exampleColorProvider = () -> Color.ORANGE;
+
+    @SerdeDefault(provider = "exampleColorProvider")
+    public Color exampleColor = exampleColorProvider.get();
+
     private transient final Supplier<String> exampleStringProvider = () -> "Hello, world!";
 
-    //@SerdeDefault(provider = "exampleStringProvider")
+    @SerdeDefault(provider = "exampleStringProvider")
     public String exampleString = exampleStringProvider.get();
 
     private transient final Supplier<String> exampleString2Provider = () -> "Another string.";
 
-    //@SerdeDefault(provider = "exampleString2Provider")
+    @SerdeDefault(provider = "exampleString2Provider")
     @SerdeKey("stringWithCustomKey")
     public String exampleString2 = exampleString2Provider.get();
 
     private transient final Supplier<String> categorizedStringProvider = () -> "Categorized!";
 
-    //@SerdeDefault(provider = "categorizedStringProvider")
-    //@ConfigEntry.Category("category")
+    @SerdeDefault(provider = "categorizedStringProvider")
+    @ConfigEntry.Category("category")
     public String categorizedString = categorizedStringProvider.get();
 
-    public ArrayList<String> exampleStringArrayList = new ArrayList<>(List.of(
+    private transient final Supplier<List<String>> exampleStringListProvider = () ->List.of(
             "one",
             "two",
             "three"
-    ));
+    );
+
+    @SerdeDefault(provider = "exampleStringListProvider")
+    public List<String> exampleStringList = exampleStringListProvider.get();
 
     private transient final Supplier<Map<String, Integer>> exampleStringIntMapProvider = () -> new LinkedHashMap<>(Map.of(
             "one", 1,
@@ -89,7 +99,7 @@ public class NightExampleConfig implements ConfigData {
     @SerdeComment("This is a comment too.")
     @SerdeDefault(provider = "innerConfigSupplier")
     @ConfigEntry.Gui.TransitiveObject
-    //@ConfigEntry.Category("inner")
+    @ConfigEntry.Category("inner")
     public InnerConfig innerConfig = innerConfigSupplier.get();
 
     public static class InnerConfig {

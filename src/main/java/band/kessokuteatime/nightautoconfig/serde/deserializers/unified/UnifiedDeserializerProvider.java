@@ -1,4 +1,4 @@
-package band.kessokuteatime.nightautoconfig.serde.deserializers;
+package band.kessokuteatime.nightautoconfig.serde.deserializers.unified;
 
 import com.electronwill.nightconfig.core.serde.TypeConstraint;
 import com.electronwill.nightconfig.core.serde.ValueDeserializer;

@@ -10,9 +10,12 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.core.serde.ObjectDeserializer;
 import com.electronwill.nightconfig.core.serde.ObjectSerializer;
+import com.electronwill.nightconfig.core.serde.SerdeException;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
+import net.fabricmc.loader.api.FabricLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -59,7 +62,7 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
     }
 
     @Override
-    public void serialize(T t) throws SerializationException {
+    public void serialize(@NotNull T t) throws SerializationException {
         Path path = type.getConfigPath(definition);
         try {
             createFile(path);
