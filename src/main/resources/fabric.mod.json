@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "${display.name}",
-  "description": "",
+  "description": "Serialize everything! Night Config integration for Auto Config.",
   "authors": [
     "Kessoku Tea Time",
     "KrLite"
@@ -34,8 +34,8 @@
   },
   "depends": {
     "fabricloader": "*",
-    "cloth-config": ">=6",
-    "minecraft": ">=1.18"
+    "cloth-config": ">=15",
+    "minecraft": ">=1.21"
   },
   "suggests": {
   }

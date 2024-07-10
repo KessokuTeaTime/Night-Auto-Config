@@ -1,8 +1,8 @@
 ### <p align=right>[`→` CurseForge](https://www.curseforge.com/minecraft/mc-mods/modid)&ensp;[`→` Modrinth](https://modrinth.com/mod/modid)</p>
 
-# Example Mod
+# Night Auto Config
 
-This is an example mod.
+Serialize everything! Night Config integration for Auto Config.
 
 ## License
 
