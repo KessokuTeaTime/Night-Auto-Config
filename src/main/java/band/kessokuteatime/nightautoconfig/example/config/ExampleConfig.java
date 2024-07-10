@@ -1,24 +1,12 @@
 package band.kessokuteatime.nightautoconfig.example.config;
 
-import band.kessokuteatime.nightautoconfig.serde.annotations.DeserializerProvider;
-import band.kessokuteatime.nightautoconfig.serde.annotations.SerializerProvider;
-import band.kessokuteatime.nightautoconfig.serde.deserializer.UnifiedDeserializerProvider;
-import band.kessokuteatime.nightautoconfig.serde.serializer.UnifiedSerializerProvider;
-import com.electronwill.nightconfig.core.serde.DeserializerContext;
-import com.electronwill.nightconfig.core.serde.SerializerContext;
-import com.electronwill.nightconfig.core.serde.TypeConstraint;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-//@SerializerProvider(ExampleConfig.ExamplePairOfIntsMapSerdeProvider.class)
-//@DeserializerProvider(ExampleConfig.ExamplePairOfIntsMapSerdeProvider.class)
 @Config(name = "autoconfig1u_example")
 public class ExampleConfig extends PartitioningSerializer.GlobalData {
     @ConfigEntry.Category("a")
@@ -62,7 +50,7 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
         public ExamplePairOfInts[] complexArray;
 
-        public Map<ExamplePairOfInts, ExamplePairOfIntPairs> complexMap;
+        //public Map<ExamplePairOfInts, ExamplePairOfIntPairs> complexMap;
 
         public ModuleA() {
             this.anEnum = ExampleEnum.FOO;
@@ -82,10 +70,13 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
             this.complexArray = new ExamplePairOfInts[]{
                     new ExamplePairOfInts(0, 1), new ExamplePairOfInts(3, 7)
             };
+            /*
             this.complexMap = new LinkedHashMap<>(Map.of(
                     new ExamplePairOfInts(0, 1), new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4)),
                     new ExamplePairOfInts(3, 7), new ExamplePairOfIntPairs(new ExamplePairOfInts(), new ExamplePairOfInts(3, 4))
             ));
+
+             */
         }
     }
 
@@ -144,41 +135,5 @@ public class ExampleConfig extends PartitioningSerializer.GlobalData {
 
     public enum ExampleEnum {
         FOO, BAR, BAZ
-    }
-
-    public static class ExamplePairOfIntsSerdeProvider implements UnifiedSerializerProvider<ExamplePairOfInts, String>, UnifiedDeserializerProvider<String, ExamplePairOfInts> {
-        @Override
-        public String serialize(ExamplePairOfInts value, SerializerContext ctx) {
-            return String.format("<%d, %d>", value.foo, value.bar);
-        }
-
-        @Override
-        public ExamplePairOfInts deserialize(String value, Optional<TypeConstraint> resultType, DeserializerContext ctx) {
-            Pattern pattern = Pattern.compile("\\s*<\\s*(\\d+)\\s*,\\s*(\\d+)\\s*>\\s*");
-            Matcher matcher = pattern.matcher(value);
-            if (matcher.matches()) {
-                return new ExamplePairOfInts(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
-            } else {
-                throw new IllegalArgumentException("Invalid format: " + value);
-            }
-        }
-    }
-
-    public static class ExamplePairOfIntsMapSerdeProvider implements UnifiedSerializerProvider<Map<ExamplePairOfInts, ?>, Map<String, ?>>, UnifiedDeserializerProvider<Map<String, ?>, Map<ExamplePairOfInts, ?>> {
-        private static final ExamplePairOfIntsSerdeProvider SERDE = new ExamplePairOfIntsSerdeProvider();
-
-        @Override
-        public Map<String, ?> serialize(Map<ExamplePairOfInts, ?> value, SerializerContext ctx) {
-            return value.entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(key -> SERDE.serialize(key.getKey(), ctx), Map.Entry::getValue));
-        }
-
-        @Override
-        public Map<ExamplePairOfInts, ?> deserialize(Map<String, ?> value, Optional<TypeConstraint> resultType, DeserializerContext ctx) {
-            return value.entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(key -> SERDE.deserialize(key.getKey(), resultType, ctx), Map.Entry::getValue));
-        }
     }
 }
