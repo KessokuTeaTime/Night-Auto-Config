@@ -1,4 +1,4 @@
-### <p align=right>[`→` CurseForge](https://www.curseforge.com/minecraft/mc-mods/night-auto-config)&ensp;[`→` Modrinth](https://modrinth.com/mod/night-auto-config)</p>
+### <p align=right>[`→` JitPack](https://jitpack.io/#KessokuTeaTime/Night-Auto-Config)&emsp;[`→` CurseForge](https://www.curseforge.com/minecraft/mc-mods/night-auto-config)&ensp;[`→` Modrinth](https://modrinth.com/mod/night-auto-config)</p>
 
 # Night Auto Config
 
@@ -8,7 +8,7 @@ Serialize everything! **Night Auto Config** is a **[Night Config](https://github
 
 **Night Auto Config** introduces a `NightConfigSerializer` to satisfy **Auto Config**'s requirement of a serializer's implementation. You can choose from all the available config formats of **Night Config,** and use the serializer just as other common serializers, even along with a `PartitioningSerializer`.
 
-It is recommended to use [`JitPack`](https://jitpack.io/#KessokuTeaTime/Night-Auto-Config/1.0.0-fabric1.21) to implement **Night Auto Config** into your project.
+It is recommended to use **[JitPack](https://jitpack.io/#KessokuTeaTime/Night-Auto-Config)** to implement **Night Auto Config** into your project.
 
 <details>
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-	implementation include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+	modImplementation include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
 }
 ```
 
@@ -46,7 +46,7 @@ repositories {
 }
 
 dependencies {
-	implementation("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+	modImplementation("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
 	include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
 }
 ```
