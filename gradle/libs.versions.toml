@@ -15,8 +15,8 @@ cloth-config = "15.0.127"
 night-config = "3.8.0"
 
 # id
-id-modrinth = "id"
-id-curseforge = "id"
+id-modrinth = "night-auto-config"
+id-curseforge = "1061154"
 
 # display
 display-name = "Night Auto Config"
