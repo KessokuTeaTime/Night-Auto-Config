@@ -30,9 +30,6 @@ dependencies {
 nightautoconfig_version={latest}
 ```
 
-> [!NOTE]
-> You should replace `{latest}` with the latest [`tag name`](https://github.com/KessokuTeaTime/Night-Auto-Config/tags) of **Night Auto Config.**
-
 </details>
 
 <details>
@@ -58,10 +55,10 @@ dependencies {
 nightautoconfig_version={latest}
 ```
 
+</details>
+
 > [!NOTE]
 > You should replace `{latest}` with the latest [`tag name`](https://github.com/KessokuTeaTime/Night-Auto-Config/tags) of **Night Auto Config.**
-
-</details>
 
 Here's a brief example:
 
