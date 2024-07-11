@@ -20,7 +20,7 @@
 
   "environment": "*",
   "entrypoints": {
-    "client": [
+    "main": [
       "band.kessokuteatime.nightautoconfig.NightAutoConfig"
     ]
   },
@@ -34,8 +34,8 @@
   },
   "depends": {
     "fabricloader": "*",
-    "cloth-config": ">=15",
-    "minecraft": ">=1.21"
+    "cloth-config": ">=11",
+    "minecraft": "1.20.x"
   },
   "suggests": {
   }

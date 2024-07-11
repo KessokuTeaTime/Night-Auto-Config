@@ -1,4 +1,3 @@
 ### Updates
 
-- **Handled** exceptions silently and give semantic logs.
-- **Added** serde support for `java.awt.Color`.
+- **Used** `ModInitializer` instead of `ClientModInitializer`.
