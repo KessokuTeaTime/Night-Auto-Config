@@ -64,6 +64,8 @@ nightautoconfig_version={latest}
 
 ## Usage
 
+The serializer implementation is at [`band.kessokuteatime.nightautoconfig.config.NightConfigSerializer`](src/main/java/band/kessokuteatime/nightautoconfig/config/NightConfigSerializer.java).
+
 Here's a brief example:
 
 `MyConfig.java`
@@ -103,6 +105,9 @@ public class MyMod implements ModInitializer {
 ```
 
 For runtime examples, checkout [this package.](/src/main/java/band/kessokuteatime/nightautoconfig/example/config)
+
+> [!IMPORTANT]
+> Please annotate your fields with [`com.electronwill.nightconfig.core.serde.annotations.SerdeDefault`](https://github.com/TheElectronWill/night-config/blob/master/core/src/main/java/com/electronwill/nightconfig/core/serde/annotations/SerdeDefault.java) for basic compatibilities! Otherwise, serialization exceptions may happen casually.
 
 ## License
 
