@@ -11,6 +11,7 @@ import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.core.serde.ObjectDeserializer;
 import com.electronwill.nightconfig.core.serde.ObjectSerializer;
 import com.electronwill.nightconfig.core.serde.SerdeException;
+import com.electronwill.nightconfig.core.serde.annotations.SerdeDefault;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
@@ -76,6 +77,10 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
             config.save();
             config.close();
         } catch (Exception e) {
+            NightAutoConfig.LOGGER.error(
+                    "Serialization failed for config {}! This will cause the program to stop writing anything to the file.",
+                    type.getRelativeConfigPath(definition)
+            );
             NightAutoConfig.LOGGER.error(e.getMessage(), e);
         }
     }
@@ -99,6 +104,11 @@ public class NightConfigSerializer<T extends ConfigData> implements ConfigSerial
                 return deserializer(configClass).deserializeFields(config, this::createDefault);
             }
         } catch (Exception e) {
+            NightAutoConfig.LOGGER.error(
+                    "Deserialization failed for config {}! This will cause the program to ignore the existing modifications and use default values. This might be caused by a missing of {} on restricting value fallbacks.",
+                    type.getRelativeConfigPath(definition),
+                    SerdeDefault.class
+            );
             NightAutoConfig.LOGGER.error(e.getMessage(), e);
             return createDefault();
         }

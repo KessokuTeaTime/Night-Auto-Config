@@ -13,6 +13,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;
 import java.util.function.UnaryOperator;
@@ -36,6 +37,10 @@ public enum ConfigType {
 
     public Path getConfigPath(Config definition) {
         return Utils.getConfigFolder().resolve(getFileName(definition));
+    }
+
+    public Path getRelativeConfigPath(Config definition) {
+        return FabricLoader.getInstance().getConfigDir().relativize(getConfigPath(definition));
     }
 
     public NightConfigSerializer.Builder builder() {
