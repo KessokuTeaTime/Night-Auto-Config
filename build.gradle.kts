@@ -99,11 +99,11 @@ publisher {
 	loaders.set(listOf("fabric", "quilt"))
 	curseEnvironment.set("both")
 
-	modrinthDepends.required("fabric-api")
+	modrinthDepends.required("fabric-api", "cloth-config")
 	modrinthDepends.optional()
 	modrinthDepends.embedded()
 
-	curseDepends.required("fabric-api")
+	curseDepends.required("fabric-api", "cloth-config")
 	curseDepends.optional()
 	curseDepends.embedded()
 
