@@ -20,7 +20,7 @@
 
   "environment": "*",
   "entrypoints": {
-    "client": [
+    "main": [
       "band.kessokuteatime.nightautoconfig.NightAutoConfig"
     ]
   },
