@@ -6,7 +6,6 @@ import com.electronwill.nightconfig.core.serde.TypeConstraint;
 import com.electronwill.nightconfig.core.serde.ValueDeserializer;
 
 import java.awt.*;
-import java.util.Map;
 import java.util.Optional;
 
 public class ColorDeserializer implements ValueDeserializer<Config, Color> {

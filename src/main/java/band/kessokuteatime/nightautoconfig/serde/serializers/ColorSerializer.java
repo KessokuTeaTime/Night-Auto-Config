@@ -4,7 +4,6 @@ import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.serde.*;
 
 import java.awt.*;
-import java.util.Map;
 
 public class ColorSerializer implements ValueSerializer<Color, Config> {
     @Override
