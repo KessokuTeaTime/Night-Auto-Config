@@ -103,7 +103,7 @@ publisher {
 	modrinthDepends.optional()
 	modrinthDepends.embedded()
 
-	curseDepends.required("fabric-api", "cloth-config")
+	curseDepends.required("fabric-api", "cloth-api")
 	curseDepends.optional()
 	curseDepends.embedded()
 
