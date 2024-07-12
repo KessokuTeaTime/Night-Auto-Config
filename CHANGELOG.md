@@ -1,3 +1,3 @@
 ### Updates
 
-- **Used** `ModInitializer` instead of `ClientModInitializer`.
+- **Used** `api` instead of `implementation`.
