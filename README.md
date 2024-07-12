@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-	modImplementation "com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version"
+	modImplementation "com.github.KessokuTeaTime:Night-Auto-Config:${project.nightautoconfig_version}"
 }
 ```
 
@@ -48,7 +48,7 @@ repositories {
 }
 
 dependencies {
-	modImplementation("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+	modImplementation("com.github.KessokuTeaTime:Night-Auto-Config:${project.nightautoconfig_version}")
 }
 ```
 
