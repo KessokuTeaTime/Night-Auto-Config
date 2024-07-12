@@ -8,6 +8,8 @@ Serialize everything! **Night Auto Config** is a **[Night Config](https://github
 
 **Night Auto Config** introduces a `NightConfigSerializer` to satisfy **Auto Config**'s requirement of a serializer's implementation. You can choose from all the available config formats of **Night Config,** and use the serializer just as other common serializers, even along with a `PartitioningSerializer`.
 
+### Add to Your Project
+
 It is recommended to use **[JitPack](https://jitpack.io/#KessokuTeaTime/Night-Auto-Config)** to implement **Night Auto Config** into your project.
 
 <details>
@@ -22,7 +24,7 @@ repositories {
 }
 
 dependencies {
-	modImplementation include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
+	modImplementation "com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version"
 }
 ```
 
@@ -47,7 +49,6 @@ repositories {
 
 dependencies {
 	modImplementation("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
-	include("com.github.KessokuTeaTime:Night-Auto-Config:$project.nightautoconfig_version")
 }
 ```
 
@@ -61,6 +62,22 @@ nightautoconfig_version={latest}
 
 > [!NOTE]
 > You should replace `{latest}` with the latest [`tag name`](https://github.com/KessokuTeaTime/Night-Auto-Config/tags) of **Night Auto Config.**
+
+### Reference as Dependency
+
+Don't forget to reference **Night Auto Config** as dependency in your mod's metadata.
+
+<h6 align="right">fabric.mod.json / quilt.mod.json</h6>
+
+```json
+{
+	"depends": {
+		"nightautoconfig": "*"
+	}
+}
+```
+
+</details>
 
 ## Usage
 
