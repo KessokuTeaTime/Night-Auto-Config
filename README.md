@@ -25,6 +25,7 @@ repositories {
 
 dependencies {
 	modApi "com.github.KessokuTeaTime:Night-Auto-Config:${project.nightautoconfig_version}"
+	// You'll need to implement Cloth Config API here.
 }
 ```
 
@@ -49,6 +50,7 @@ repositories {
 
 dependencies {
 	modApi("com.github.KessokuTeaTime:Night-Auto-Config:${project.nightautoconfig_version}")
+	// You'll need to implement Cloth Config API here.
 }
 ```
 
