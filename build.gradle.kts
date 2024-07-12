@@ -39,7 +39,7 @@ dependencies {
 
 	modImplementation(libs.cloth.config)
 
-	implementation(libs.bundles.night.config)
+	api(libs.bundles.night.config)
 	include(libs.bundles.night.config)
 
 	// JUnit
