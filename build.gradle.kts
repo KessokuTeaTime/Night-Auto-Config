@@ -37,9 +37,9 @@ dependencies {
 	mappings(libs.yarn)
 	modImplementation(libs.bundles.fabric)
 
-	modImplementation(libs.cloth.config)
+	modApi(libs.cloth.config)
 
-	implementation(libs.bundles.night.config)
+	api(libs.bundles.night.config)
 	include(libs.bundles.night.config)
 
 	// JUnit
