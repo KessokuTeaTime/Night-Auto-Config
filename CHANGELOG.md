@@ -1,3 +1,3 @@
-### Updates
+### Fixes
 
-- **Used** `api` instead of `implementation`.
+- **Included** missing `night-config-core` package.
