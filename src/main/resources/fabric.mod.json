@@ -3,7 +3,7 @@
   "id": "nightautoconfig",
   "version": "${version}",
 
-  "name": "${display.name}",
+  "name": "${display.name.get()}",
   "description": "Serialize everything! Night Config integration for Auto Config.",
   "authors": [
     "Kessoku Tea Time",
