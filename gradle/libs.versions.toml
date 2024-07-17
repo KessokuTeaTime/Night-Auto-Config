@@ -1,7 +1,7 @@
 [versions]
 maven-group = "band.kessokuteatime"
 archives-name = "nightautoconfig"
-mod = "1.0.5"
+mod = "1.0.6"
 loader = "fabric"
 
 minecraft = "1.21"
