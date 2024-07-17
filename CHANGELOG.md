@@ -1,3 +1,3 @@
-### Fixes
+### Maintenance Update
 
-- **Included** missing `night-config-core` package.
+- **Use** fully semantic versioning.
