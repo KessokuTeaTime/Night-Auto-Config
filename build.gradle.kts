@@ -66,6 +66,9 @@ tasks {
 publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
+			groupId = "band.kessokuteatime"
+			artifactId = libs.versions.mod.get()
+
 			from(components["java"])
 		}
 	}
@@ -73,7 +76,7 @@ publishing {
 	repositories {
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/KessokuTeaTime/Night-Auto-Config")
+			url = uri("https://maven.pkg.github.com/KessokuTeaTime/${rootProject.name}")
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
