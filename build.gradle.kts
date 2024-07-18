@@ -66,8 +66,8 @@ tasks {
 publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
-			groupId = "band.kessokuteatime"
-			artifactId = libs.versions.mod.get()
+			groupId = group.toString()
+			artifactId = base.archivesName.get()
 
 			from(components["java"])
 		}
