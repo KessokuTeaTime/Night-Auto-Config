@@ -66,11 +66,22 @@ tasks {
 publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
+			groupId = group.toString()
+			artifactId = base.archivesName.get()
+
 			from(components["java"])
 		}
 	}
 
 	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/KessokuTeaTime/${rootProject.name}")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR")
+				password = System.getenv("GITHUB_TOKEN")
+			}
+		}
 	}
 }
 
