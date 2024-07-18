@@ -5,6 +5,7 @@ plugins {
 	`maven-publish`
 	alias(libs.plugins.fabric.loom)
 	alias(libs.plugins.modpublisher)
+	alias(libs.plugins.shadow)
 }
 
 val display = libs.versions.display
@@ -29,8 +30,7 @@ dependencies {
 
 	modApi(libs.cloth.config)
 
-	api(libs.bundles.night.config)
-	include(libs.bundles.night.config)
+	shadow(libs.bundles.night.config)
 
 	// JUnit
 	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
