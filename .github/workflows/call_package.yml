@@ -1,0 +1,16 @@
+name: Publish to GitHub Packages
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  call-workflow:
+    uses: KessokuTeaTime/.github/.github/workflows/package.yml@main
+    secrets: inherit
