@@ -73,7 +73,7 @@ publishing {
 	repositories {
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/KessokuTeaTime/${libs.versions.id}")
+			url = uri("https://maven.pkg.github.com/KessokuTeaTime/${rootProject.name}")
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
