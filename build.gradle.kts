@@ -73,7 +73,7 @@ publishing {
 	repositories {
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/KessokuTeaTime/Night-Auto-Config")
+			url = uri("https://maven.pkg.github.com/kessokuteatime/Night-Auto-Config")
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
