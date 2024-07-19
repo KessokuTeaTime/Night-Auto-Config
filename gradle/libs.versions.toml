@@ -2,13 +2,13 @@
 maven-group = "band.kessokuteatime"
 archives-name = "nightautoconfig"
 mod = "1.1.0-alpha.1"
-loader = "fabric"
+loader = "neoforge"
 
 minecraft = "1.21"
 yarn = "1.21+build.7"
-fabric-loader = "0.15.11"
-fabric-api = "0.100.4+1.21"
-fabric-loom = "1.6-SNAPSHOT"
+yarn-patch = "1.21+build.4"
+neoforge = "21.0.109-beta"
+architectury-loom = "1.6-SNAPSHOT"
 modpublisher = "2.1.0"
 
 cloth-config = "15.0.127"
@@ -20,16 +20,16 @@ id-curseforge = "1061154"
 
 # display
 display-name = "Night Auto Config"
-display-loader = "Fabric"
-display-version = "1.21+"
+display-loader = "NeoForge"
+display-version = "1.21"
 
 [libraries]
 minecraft = { group = "com.mojang", name = "minecraft", version.ref = "minecraft" }
 yarn = { group = "net.fabricmc", name = "yarn", version.ref = "yarn" }
-fabric-loader = { group = "net.fabricmc", name = "fabric-loader", version.ref = "fabric-loader" }
-fabric-api = { group = "net.fabricmc.fabric-api", name = "fabric-api", version.ref = "fabric-api" }
+yarn-patch = { group = "dev.architectury", name = "yarn-mappings-patch-neoforge", version.ref = "yarn-patch"}
+neoforge = { group = "net.neoforged", name = "neoforge", version.ref = "neoforge" }
 
-cloth-config = { group = "me.shedaniel.cloth", name = "cloth-config-fabric", version.ref = "cloth-config" }
+cloth-config = { group = "me.shedaniel.cloth", name = "cloth-config-neoforge", version.ref = "cloth-config" }
 
 night-config-core = { group = "com.electronwill.night-config", name = "core", version.ref = "night-config" }
 night-config-json = { group = "com.electronwill.night-config", name = "json", version.ref = "night-config" }
@@ -38,9 +38,8 @@ night-config-hocon = { group = "com.electronwill.night-config", name = "hocon", 
 night-config-yaml = { group = "com.electronwill.night-config", name = "yaml", version.ref = "night-config" }
 
 [plugins]
-fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
+architectury-loom = { id = "dev.architectury.loom", version.ref = "architectury-loom" }
 modpublisher = { id = "com.hypherionmc.modutils.modpublisher", version.ref = "modpublisher" }
 
 [bundles]
-fabric = ["fabric-loader", "fabric-api"]
 night-config = ["night-config-core", "night-config-json", "night-config-toml", "night-config-hocon", "night-config-yaml"]

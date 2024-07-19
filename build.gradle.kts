@@ -3,7 +3,7 @@ plugins {
 	java
 	idea
 	`maven-publish`
-	alias(libs.plugins.fabric.loom)
+	alias(libs.plugins.architectury.loom)
 	alias(libs.plugins.modpublisher)
 }
 
@@ -19,13 +19,17 @@ base {
 repositories {
 	mavenCentral()
 	maven { url = uri("https://maven.shedaniel.me/") }
+	maven { url = uri("https://maven.neoforged.net/releases/") }
 	maven { url = uri("https://maven.terraformersmc.com/releases/") }
 }
 
 dependencies {
 	minecraft(libs.minecraft)
-	mappings(libs.yarn)
-	modImplementation(libs.bundles.fabric)
+	mappings(loom.layered {
+		mappings(variantOf(libs.yarn) { classifier("v2") })
+		mappings(libs.yarn.patch)
+	})
+	neoForge(libs.neoforge)
 
 	modApi(libs.cloth.config)
 
@@ -46,10 +50,9 @@ java {
 
 tasks {
 	processResources {
-		filesMatching("fabric.mod.json") {
+		filesMatching("META-INF/neoforge.mods.toml") {
 			expand(mapOf(
-					"version" to libs.versions.mod.get(),
-					"display" to display
+					"version" to libs.versions.mod.get()
 			))
 		}
 	}
@@ -97,14 +100,14 @@ publisher {
 	versionType.set("release")
 	projectVersion.set(project.version.toString())
 	gameVersions.set(listOf("1.21"))
-	loaders.set(listOf("fabric", "quilt"))
+	loaders.set(listOf("neoforge"))
 	curseEnvironment.set("both")
 
-	modrinthDepends.required("fabric-api", "cloth-config")
+	modrinthDepends.required("cloth-config")
 	modrinthDepends.optional()
 	modrinthDepends.embedded()
 
-	curseDepends.required("fabric-api", "cloth-config")
+	curseDepends.required("cloth-config")
 	curseDepends.optional()
 	curseDepends.embedded()
 
