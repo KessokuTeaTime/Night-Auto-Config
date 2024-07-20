@@ -16,7 +16,7 @@ logoFile = "assets/nightautoconfig/icon.png"
 [[dependencies.nightautoconfig]]
 modId = "neoforge"
 type = "required"
-versionRange = "[20.5,20.6]"
+versionRange = "[20.5,)"
 ordering = "NONE"
 side = "BOTH"
 
