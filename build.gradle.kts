@@ -35,7 +35,7 @@ dependencies {
 	modApi(libs.cloth.config)
 
 	api(libs.bundles.night.config)
-	include(libs.bundles.night.config)
+	shadow(libs.bundles.night.config)
 
 	// JUnit
 	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
@@ -56,6 +56,15 @@ tasks {
 					"version" to libs.versions.mod.get()
 			))
 		}
+	}
+
+	shadowJar {
+		relocate("com.electronwill.nightconfig", "${libs.versions.maven.group.get()}.shadow.nightconfig")
+		archiveClassifier.set("dev-shadow")
+	}
+
+	remapJar {
+		dependsOn(shadowJar)
 	}
 
 	jar {
