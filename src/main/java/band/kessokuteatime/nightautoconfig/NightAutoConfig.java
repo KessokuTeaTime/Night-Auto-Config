@@ -5,18 +5,22 @@ import band.kessokuteatime.nightautoconfig.example.config.NightExampleConfig;
 import band.kessokuteatime.nightautoconfig.config.base.ConfigType;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NightAutoConfig implements ModInitializer {
+@Mod(NightAutoConfig.ID)
+public class NightAutoConfig {
 	public static final String NAME = "Night Auto Config", ID = "nightautoconfig";
 	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
 
-    @Override
+    public NightAutoConfig() {
+        this.onInitialize();
+    }
+
 	public void onInitialize() {
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        if (!FMLLoader.isProduction()) {
             LOGGER.warn(
                     "You're running {} in a development environment. This produces extra files for testing purposes.",
                     NAME

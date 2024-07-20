@@ -3,7 +3,6 @@ package band.kessokuteatime.nightautoconfig.config.base;
 import band.kessokuteatime.nightautoconfig.config.NightConfigSerializer;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.hocon.HoconFormat;
 import com.electronwill.nightconfig.json.JsonFormat;
@@ -13,7 +12,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.serializer.ConfigSerializer;
 import me.shedaniel.autoconfig.util.Utils;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
 import java.util.function.UnaryOperator;
@@ -40,7 +39,7 @@ public enum ConfigType {
     }
 
     public Path getRelativeConfigPath(Config definition) {
-        return FabricLoader.getInstance().getConfigDir().relativize(getConfigPath(definition));
+        return FMLPaths.CONFIGDIR.get().relativize(getConfigPath(definition));
     }
 
     public NightConfigSerializer.Builder builder() {

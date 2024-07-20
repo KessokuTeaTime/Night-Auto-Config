@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "GPL-3.0"
+
+[[mods]]
+modId = "nightautoconfig"
+version = "${version}"
+displayName = "Night Auto Config"
+displayURL = "https://github.com/KessokuTeaTime/Night-Auto-Config"
+authors = "Kessoku Tea Time"
+description = '''
+Serialize everything! Night Config integration for Auto Config.
+'''
+#logoFile = "assets/nightautoconfig/icon.png"
+
+[[dependencies.nightautoconfig]]
+modId = "neoforge"
+type = "required"
+versionRange = "[20.2,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.nightautoconfig]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.20.2,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.nightautoconfig]]
+modId = "cloth_config"
+type = "required"
+versionRange = "[10,)"
+ordering = "NONE"
+side = "BOTH"

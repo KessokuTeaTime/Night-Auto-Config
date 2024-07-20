@@ -1,6 +1,5 @@
 package band.kessokuteatime.nightautoconfig.serde;
 
-
 import band.kessokuteatime.nightautoconfig.serde.serializers.ColorSerializer;
 import com.electronwill.nightconfig.core.serde.ObjectSerializerBuilder;
 
