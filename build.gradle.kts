@@ -3,8 +3,9 @@ plugins {
 	java
 	idea
 	`maven-publish`
-	alias(libs.plugins.fabric.loom)
+	alias(libs.plugins.architectury.loom)
 	alias(libs.plugins.modpublisher)
+	alias(libs.plugins.shadow)
 }
 
 val display = libs.versions.display
@@ -24,13 +25,13 @@ repositories {
 
 dependencies {
 	minecraft(libs.minecraft)
-	mappings(libs.yarn)
-	modImplementation(libs.bundles.fabric)
+	mappings(libs.yarn) { artifact { classifier = "v2" } }
+	forge(libs.forge)
 
 	modApi(libs.cloth.config)
 
 	api(libs.bundles.night.config)
-	include(libs.bundles.night.config)
+	shadow(libs.bundles.night.config)
 
 	// JUnit
 	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
@@ -52,6 +53,15 @@ tasks {
 					"display" to display
 			))
 		}
+	}
+
+	shadowJar {
+		relocate("com.electronwill.nightconfig", "${libs.versions.maven.group.get()}.shadow.nightconfig")
+		archiveClassifier.set("dev-shadow")
+	}
+
+	remapJar {
+		dependsOn(shadowJar)
 	}
 
 	jar {
@@ -96,15 +106,15 @@ publisher {
 
 	versionType.set("release")
 	projectVersion.set(project.version.toString())
-	gameVersions.set(listOf("1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6"))
-	loaders.set(listOf("fabric", "quilt"))
+	gameVersions.set(listOf("1.20", "1.20.1"))
+	loaders.set(listOf("forge"))
 	curseEnvironment.set("both")
 
-	modrinthDepends.required("fabric-api", "cloth-config")
+	modrinthDepends.required("cloth-config")
 	modrinthDepends.optional()
 	modrinthDepends.embedded()
 
-	curseDepends.required("fabric-api", "cloth-config")
+	curseDepends.required("cloth-config")
 	curseDepends.optional()
 	curseDepends.embedded()
 
