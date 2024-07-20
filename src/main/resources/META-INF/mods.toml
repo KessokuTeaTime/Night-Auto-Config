@@ -11,7 +11,7 @@ authors = "Kessoku Tea Time"
 description = '''
 Serialize everything! Night Config integration for Auto Config.
 '''
-#logoFile = "assets/nightautoconfig/icon.png"
+logoFile = "assets/nightautoconfig/icon.png"
 
 [[dependencies.nightautoconfig]]
 modId = "neoforge"
