@@ -10,6 +10,7 @@ yarn-patch = "1.21+build.4"
 neoforge = "21.0.109-beta"
 architectury-loom = "1.6-SNAPSHOT"
 modpublisher = "2.1.0"
+shadow = "8.+"
 
 cloth-config = "15.0.127"
 night-config = "3.8.0"
@@ -40,6 +41,7 @@ night-config-yaml = { group = "com.electronwill.night-config", name = "yaml", ve
 [plugins]
 architectury-loom = { id = "dev.architectury.loom", version.ref = "architectury-loom" }
 modpublisher = { id = "com.hypherionmc.modutils.modpublisher", version.ref = "modpublisher" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
 
 [bundles]
 night-config = ["night-config-core", "night-config-json", "night-config-toml", "night-config-hocon", "night-config-yaml"]

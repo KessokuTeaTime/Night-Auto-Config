@@ -5,6 +5,7 @@ plugins {
 	`maven-publish`
 	alias(libs.plugins.architectury.loom)
 	alias(libs.plugins.modpublisher)
+	alias(libs.plugins.shadow)
 }
 
 val display = libs.versions.display
