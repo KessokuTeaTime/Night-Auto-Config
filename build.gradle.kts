@@ -47,10 +47,9 @@ java {
 
 tasks {
 	processResources {
-		filesMatching("fabric.mod.json") {
+		filesMatching("META-INF/mods.toml") {
 			expand(mapOf(
-					"version" to libs.versions.mod.get(),
-					"display" to display
+					"version" to libs.versions.mod.get()
 			))
 		}
 	}

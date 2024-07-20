@@ -5,7 +5,7 @@ license = "GPL-3.0"
 [[mods]]
 modId = "nightautoconfig"
 version = "${version}"
-displayName = "Bounced"
+displayName = "Night Auto Config"
 displayURL = "https://github.com/KessokuTeaTime/Night-Auto-Config"
 authors = "Kessoku Tea Time"
 description = '''
