@@ -26,7 +26,10 @@ repositories {
 
 dependencies {
 	minecraft(libs.minecraft)
-	mappings(libs.yarn) { artifact { classifier = "v2" } }
+	mappings(loom.layered {
+		mappings(variantOf(libs.yarn) { classifier("v2") })
+		mappings(libs.yarn.patch)
+	})
 	neoForge(libs.neoforge)
 
 	modApi(libs.cloth.config)
@@ -40,15 +43,15 @@ dependencies {
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 
 	withSourcesJar()
 }
 
 tasks {
 	processResources {
-		filesMatching("META-INF/mods.toml") {
+		filesMatching("META-INF/neoforge.mods.toml") {
 			expand(mapOf(
 					"version" to libs.versions.mod.get()
 			))
@@ -106,7 +109,7 @@ publisher {
 
 	versionType.set("release")
 	projectVersion.set(project.version.toString())
-	gameVersions.set(listOf("1.20.2", "1.20.3", "1.20.4"))
+	gameVersions.set(listOf("1.20.5", "1.20.6"))
 	loaders.set(listOf("neoforge"))
 	curseEnvironment.set("both")
 

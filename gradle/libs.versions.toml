@@ -4,9 +4,10 @@ archives-name = "nightautoconfig"
 mod = "1.0.6"
 loader = "neoforge"
 
-minecraft = "1.20.4"
-yarn = "1.20.4+build.3"
-neoforge = "20.4.237"
+minecraft = "1.20.6"
+yarn = "1.20.6+build.3"
+yarn-patch = "1.20.6+build.4"
+neoforge = "20.6.119"
 architectury-loom = "1.6-SNAPSHOT"
 modpublisher = "2.1.0"
 shadow = "8.+"
@@ -21,11 +22,12 @@ id-curseforge = "1061154"
 # display
 display-name = "Night Auto Config"
 display-loader = "NeoForge"
-display-version = "1.20.2~1.20.4"
+display-version = "1.20.5~1.20.6"
 
 [libraries]
 minecraft = { group = "com.mojang", name = "minecraft", version.ref = "minecraft" }
 yarn = { group = "net.fabricmc", name = "yarn", version.ref = "yarn" }
+yarn-patch = { group = "dev.architectury", name = "yarn-mappings-patch-neoforge", version.ref = "yarn-patch"}
 neoforge = { group = "net.neoforged", name = "neoforge", version.ref = "neoforge" }
 
 cloth-config = { group = "me.shedaniel.cloth", name = "cloth-config-neoforge", version.ref = "cloth-config" }
