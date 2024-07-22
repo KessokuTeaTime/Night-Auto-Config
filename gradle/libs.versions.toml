@@ -1,7 +1,7 @@
 [versions]
 maven-group = "band.kessokuteatime"
 archives-name = "nightautoconfig"
-mod = "1.0.6"
+mod = "1.1.0"
 loader = "neoforge"
 
 minecraft = "1.20.6"
