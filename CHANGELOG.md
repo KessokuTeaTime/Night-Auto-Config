@@ -1,3 +1,3 @@
 ### Maintenance Update
 
-- **Use** fully semantic versioning.
+- **Used** shadow to shadow jars.
