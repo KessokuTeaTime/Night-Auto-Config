@@ -8,7 +8,7 @@ minecraft = "1.20.4"
 yarn = "1.20.4+build.3"
 neoforge = "20.4.237"
 architectury-loom = "1.6-SNAPSHOT"
-modpublisher = "2.1.0"
+modpublisher = "2.+"
 shadow = "8.+"
 
 cloth-config = "13.0.121"
