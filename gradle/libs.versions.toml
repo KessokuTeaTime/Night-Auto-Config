@@ -9,7 +9,7 @@ yarn = "1.20.6+build.3"
 yarn-patch = "1.20.6+build.4"
 neoforge = "20.6.119"
 architectury-loom = "1.6-SNAPSHOT"
-modpublisher = "2.1.0"
+modpublisher = "2.+"
 shadow = "8.+"
 
 cloth-config = "13.0.121"
