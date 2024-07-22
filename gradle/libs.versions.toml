@@ -1,7 +1,7 @@
 [versions]
 maven-group = "band.kessokuteatime"
 archives-name = "nightautoconfig"
-mod = "1.1.0-alpha.1"
+mod = "1.1.0"
 loader = "fabric"
 
 minecraft = "1.21"
@@ -10,6 +10,7 @@ fabric-loader = "0.15.11"
 fabric-api = "0.100.4+1.21"
 fabric-loom = "1.6-SNAPSHOT"
 modpublisher = "2.1.0"
+shadow = "8.+"
 
 cloth-config = "15.0.127"
 night-config = "3.8.0"
@@ -40,6 +41,7 @@ night-config-yaml = { group = "com.electronwill.night-config", name = "yaml", ve
 [plugins]
 fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }
 modpublisher = { id = "com.hypherionmc.modutils.modpublisher", version.ref = "modpublisher" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
 
 [bundles]
 fabric = ["fabric-loader", "fabric-api"]
