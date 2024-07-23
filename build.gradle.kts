@@ -94,7 +94,7 @@ publisher {
 	modrinthID.set(libs.versions.id.modrinth)
 	curseID.set(libs.versions.id.curseforge)
 
-	versionType.set("release")
+	versionType.set("alpha")
 	projectVersion.set(project.version.toString())
 	gameVersions.set(listOf("1.21"))
 	loaders.set(listOf("fabric", "quilt"))
