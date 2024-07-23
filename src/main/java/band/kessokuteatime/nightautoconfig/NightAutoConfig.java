@@ -17,13 +17,18 @@ public class NightAutoConfig implements ModInitializer {
     @Override
 	public void onInitialize() {
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            LOGGER.warn(
-                    "You're running {} in a development environment. This produces extra files for testing purposes.",
-                    NAME
-            );
+            var location = getClass().getProtectionDomain().getCodeSource().getLocation();
+            boolean jarred = location.toString().startsWith("jar:");
 
-            AutoConfig.register(NightExampleConfig.class, ConfigType.DEFAULT_COMMENTED::fileWatcherSerializer);
-            AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.DEFAULT_COMMENTED::fileWatcherSerializer));
+            if (!jarred) {
+                LOGGER.warn(
+                        "You're running {} in a development environment. This produces extra files for testing purposes.",
+                        NAME
+                );
+
+                AutoConfig.register(NightExampleConfig.class, ConfigType.DEFAULT_COMMENTED::fileWatcherSerializer);
+                AutoConfig.register(ExampleConfig.class, PartitioningSerializer.wrap(ConfigType.DEFAULT_COMMENTED::fileWatcherSerializer));
+            }
         }
     }
 }
