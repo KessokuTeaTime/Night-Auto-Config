@@ -1,14 +1,14 @@
 [versions]
 maven-group = "band.kessokuteatime"
 archives-name = "nightautoconfig"
-mod = "1.0.6"
+mod = "1.1.0"
 loader = "forge"
 
 minecraft = "1.20.1"
 yarn = "1.20.1+build.10"
 forge = "1.20.1-47.3.5"
 architectury-loom = "1.6-SNAPSHOT"
-modpublisher = "2.1.0"
+modpublisher = "2.+"
 shadow = "8.+"
 
 cloth-config = "11.1.118"
