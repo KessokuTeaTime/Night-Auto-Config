@@ -18,7 +18,7 @@ public class NightAutoConfig implements ModInitializer {
 	public void onInitialize() {
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             var location = getClass().getProtectionDomain().getCodeSource().getLocation();
-            boolean jarred = location.toString().startsWith("jar:");
+            boolean jarred = location.toString().endsWith(".jar");
 
             if (!jarred) {
                 LOGGER.warn(
