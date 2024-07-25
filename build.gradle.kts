@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
 	base
 	java
@@ -7,16 +5,12 @@ plugins {
 	`maven-publish`
 	alias(libs.plugins.fabric.loom)
 	alias(libs.plugins.modpublisher)
-	alias(libs.plugins.shadow)
 }
 
 val display = libs.versions.display
 
 group = libs.versions.maven.group.get()
 version = "${libs.versions.mod.get()}-${libs.versions.loader.get()}.${libs.versions.minecraft.get()}"
-
-val shadowImplementation: Configuration by configurations.creating
-configurations["implementation"].extendsFrom(shadowImplementation)
 
 base {
 	archivesName.set(libs.versions.archives.name)
@@ -35,7 +29,8 @@ dependencies {
 
 	modApi(libs.cloth.config)
 
-	shadowImplementation(libs.bundles.night.config)
+	implementation(libs.bundles.night.config)
+	include(libs.bundles.night.config)
 
 	// JUnit
 	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
@@ -59,22 +54,8 @@ tasks {
 		}
 	}
 
-	shadowJar {
-		from("LICENSE")
-
-		isEnableRelocation = true
-		relocationPrefix = "${project.group}.${base.archivesName.get()}"
-
-		archiveClassifier.set("")
-		configurations = listOf(shadowImplementation)
-	}
-
-	assemble {
-		dependsOn(shadowJar)
-	}
-
 	jar {
-		isEnabled = false
+		from("LICENSE")
 	}
 
 	test {
