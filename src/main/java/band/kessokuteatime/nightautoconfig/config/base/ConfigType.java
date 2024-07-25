@@ -3,7 +3,6 @@ package band.kessokuteatime.nightautoconfig.config.base;
 import band.kessokuteatime.nightautoconfig.config.NightConfigSerializer;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.core.file.GenericBuilder;
 import com.electronwill.nightconfig.hocon.HoconFormat;
 import com.electronwill.nightconfig.json.JsonFormat;
